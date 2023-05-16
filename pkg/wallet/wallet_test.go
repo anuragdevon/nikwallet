@@ -18,7 +18,7 @@ func TestCreateWalletToCreateAValidWallet(t *testing.T) {
 	defer database.Close()
 
 	newUser := &user.User{
-		EmailID:  "testw51@example.com",
+		EmailID:  "testw511@example.com",
 		Password: "test123",
 	}
 	newUserID, _ := user.CreateUser(database, newUser)

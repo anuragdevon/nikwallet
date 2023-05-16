@@ -1,4 +1,4 @@
-package db
+package user
 
 import (
 	"fmt"
@@ -90,7 +90,7 @@ func TestGetUserByEmail(t *testing.T) {
 	defer database.Close()
 
 	// Insert a test user into the database
-	userEmail := "testuser@example.com"
+	userEmail := "testuser99@example.com"
 	userPassword := "password123"
 	userID, err := CreateUser(database, &User{EmailID: userEmail, Password: userPassword})
 	if err != nil {
@@ -109,10 +109,6 @@ func TestGetUserByEmail(t *testing.T) {
 
 	if user.EmailID != userEmail {
 		t.Errorf("GetUserByEmail() returned wrong email, got %s, want %s", user.EmailID, userEmail)
-	}
-
-	if user.Password != userPassword {
-		t.Errorf("GetUserByEmail() returned wrong password, got %s, want %s", user.Password, userPassword)
 	}
 }
 

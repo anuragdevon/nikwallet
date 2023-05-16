@@ -1,4 +1,4 @@
-package db
+package user
 
 import (
 	"fmt"
@@ -12,6 +12,12 @@ type User struct {
 }
 
 func CreateUser(database *db.DB, user *User) (int, error) {
+	// hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
+	// if err != nil {
+	// 	return 0, fmt.Errorf("failed to hash password: %w", err)
+	// }
+	// user.Password = string(hashedPassword)
+
 	query := `INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id`
 	err := database.QueryRow(query, user.EmailID, user.Password).Scan(&user.ID)
 	if err != nil {
