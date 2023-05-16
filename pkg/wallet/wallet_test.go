@@ -130,7 +130,7 @@ func TestWithdrawMoneyFromWalletToReturnWithdrawnMoney(t *testing.T) {
 	defer database.Close()
 
 	newUser := &user.User{
-		EmailID:  "testw16s@example.com",
+		EmailID:  "testw17s@example.com",
 		Password: "test123",
 	}
 	newUserID, _ := user.CreateUser(database, newUser)
