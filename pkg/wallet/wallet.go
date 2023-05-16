@@ -52,3 +52,23 @@ func GetWalletByID(database *db.DB, walletID int) (*Wallet, error) {
 	}
 	return wallet, nil
 }
+
+func AddMoneyToWallet(database *db.DB, walletID int, moneyToAdd money.Money) error {
+	wallet, err := GetWalletByID(database, walletID)
+	if err != nil {
+		return err
+	}
+
+	newMoney, err := wallet.Money.Add(&moneyToAdd)
+	if err != nil {
+		return err
+	}
+
+	query := `UPDATE wallet SET amount=$1, updated_at=$2 WHERE id=$3`
+	_, err = database.Exec(query, newMoney.Amount, time.Now(), walletID)
+	if err != nil {
+		return fmt.Errorf("failed to add money to wallet: %w", err)
+	}
+
+	return nil
+}
