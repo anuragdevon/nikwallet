@@ -21,9 +21,6 @@ func NewMoney(amount int64, currency string) (*Money, error) {
 }
 
 func (m *Money) Add(money *Money) (*Money, error) {
-	if money == nil {
-		return &Money{}, fmt.Errorf("money object cannot be nil")
-	}
 	if m.Currency != money.Currency {
 		return &Money{}, fmt.Errorf("cannot add money with different currency")
 	}
@@ -32,9 +29,6 @@ func (m *Money) Add(money *Money) (*Money, error) {
 }
 
 func (m *Money) Subtract(money *Money) (*Money, error) {
-	if money == nil {
-		return &Money{}, fmt.Errorf("money object cannot be nil")
-	}
 	if m.Currency != money.Currency {
 		return &Money{}, fmt.Errorf("cannot subtract money with different currency")
 	}
