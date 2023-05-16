@@ -41,3 +41,14 @@ func CreateWallet(database *db.DB, userID int) (int, error) {
 
 	return wallet.ID, nil
 }
+
+func GetWalletByID(database *db.DB, walletID int) (*Wallet, error) {
+	wallet := &Wallet{}
+	query := `SELECT id, user_id, amount, currency, created_at, updated_at FROM wallet WHERE id = $1`
+	err := database.QueryRow(query, walletID).
+		Scan(&wallet.ID, &wallet.UserID, &wallet.Money.Amount, &wallet.Money.Currency, &wallet.CreatedAt, &wallet.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("wallet not found")
+	}
+	return wallet, nil
+}
