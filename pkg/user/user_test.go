@@ -54,3 +54,29 @@ func TestCreateUserToReturnErrorWithDuplicateEmail(t *testing.T) {
 		t.Fatalf("Expected to return err with duplicate email")
 	}
 }
+
+func TestGetUserByIDToReturnValidUser(t *testing.T) {
+	database, err := db.ConnectToDB("testdb")
+	if err != nil {
+		t.Fatalf("failed to connect to database: %v", err)
+	}
+	defer database.Close()
+
+	user := &User{
+		EmailID:  "test4@example.com",
+		Password: "test123",
+	}
+	err = CreateUser(database, user)
+	if err != nil {
+		t.Fatalf("failed to create user: %v", err)
+	}
+
+	fetchedUser, err := GetUserByID(database, user.ID)
+	if err != nil {
+		t.Fatalf("GetUserByID() error = %v, want nil", err)
+	}
+
+	if fetchedUser.EmailID != user.EmailID {
+		t.Errorf("GetUserByID() EmailID = %v, want %v", fetchedUser.EmailID, user.EmailID)
+	}
+}

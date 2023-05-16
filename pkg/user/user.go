@@ -19,3 +19,14 @@ func CreateUser(database *db.DB, user *User) error {
 	}
 	return nil
 }
+
+func GetUserByID(database *db.DB, id int) (*User, error) {
+	query := `SELECT id, email, password FROM users WHERE id=$1`
+	user := &User{}
+
+	err := database.QueryRow(query, id).Scan(&user.ID, &user.EmailID, &user.Password)
+	if err != nil {
+		return nil, fmt.Errorf("user with id %d not found", id)
+	}
+	return user, nil
+}
