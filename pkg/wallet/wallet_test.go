@@ -8,6 +8,8 @@ import (
 	"testing"
 )
 
+// Do not pass database to methods
+// do not reinitiate database again and again
 func TestCreateWalletToCreateAValidWallet(t *testing.T) {
 	database, err := db.ConnectToDB("testdb")
 	if err != nil {

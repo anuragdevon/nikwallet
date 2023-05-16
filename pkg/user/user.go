@@ -30,3 +30,15 @@ func GetUserByID(database *db.DB, id int) (*User, error) {
 	}
 	return user, nil
 }
+
+func GetUserByEmail(database *db.DB, email string) (*User, error) {
+	query := `SELECT id, email, password FROM users WHERE email=$1`
+	user := &User{}
+
+	err := database.QueryRow(query, email).Scan(&user.ID, &user.EmailID, &user.Password)
+	if err != nil {
+		return nil, fmt.Errorf("user with email %s not found", email)
+	}
+
+	return user, nil
+}
