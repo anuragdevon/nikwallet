@@ -72,3 +72,23 @@ func AddMoneyToWallet(database *db.DB, walletID int, moneyToAdd money.Money) err
 
 	return nil
 }
+
+func WithdrawMoneyFromWallet(database *db.DB, walletID int, moneyToWithdraw money.Money) (money.Money, error) {
+	wallet, err := GetWalletByID(database, walletID)
+	if err != nil {
+		return money.Money{}, err
+	}
+
+	remainedMoney, err := wallet.Money.Subtract(&moneyToWithdraw)
+	if err != nil {
+		return money.Money{}, err
+	}
+
+	query := `UPDATE wallet SET amount=$1, updated_at=$2 WHERE id=$3`
+	_, err = database.Exec(query, remainedMoney.Amount, time.Now(), walletID)
+	if err != nil {
+		return money.Money{}, fmt.Errorf("failed to withdraw money from wallet: %w", err)
+	}
+
+	return moneyToWithdraw, nil
+}

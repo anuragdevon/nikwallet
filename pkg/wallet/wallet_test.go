@@ -121,3 +121,67 @@ func TestAddMoneyToNonEmptyWallet(t *testing.T) {
 		t.Errorf("AddMoneyToWallet() got = %v, want = %v", wallet.Money, expectedMoney)
 	}
 }
+
+func TestWithdrawMoneyFromWalletToReturnWithdrawnMoney(t *testing.T) {
+	database, err := db.ConnectToDB("testdb")
+	if err != nil {
+		t.Fatalf("failed to connect to database: %v", err)
+	}
+	defer database.Close()
+
+	newUser := &user.User{
+		EmailID:  "testw16s@example.com",
+		Password: "test123",
+	}
+	newUserID, _ := user.CreateUser(database, newUser)
+
+	walletID, _ := CreateWallet(database, newUserID)
+
+	initialMoney, _ := money.NewMoney(100, "INR")
+
+	err = AddMoneyToWallet(database, walletID, *initialMoney)
+	if err != nil {
+		t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
+	}
+
+	withdrawMoney, _ := money.NewMoney(50, "INR")
+
+	withdrawnMoney, err := WithdrawMoneyFromWallet(database, walletID, *withdrawMoney)
+	if err != nil {
+		t.Fatalf("WithdrawMoneyFromWallet() error = %v, want nil", err)
+	}
+
+	if !reflect.DeepEqual(withdrawnMoney, *withdrawMoney) {
+		t.Errorf("WithdrawMoneyFromWallet() got = %v, want = %v", withdrawnMoney, withdrawMoney)
+	}
+}
+
+func TestWithdrawMoneyFromWalletToReturnErrorForNotEnoughMoney(t *testing.T) {
+	database, err := db.ConnectToDB("testdb")
+	if err != nil {
+		t.Fatalf("failed to connect to database: %v", err)
+	}
+	defer database.Close()
+
+	newUser := &user.User{
+		EmailID:  "testw16s@example.com",
+		Password: "test123",
+	}
+	newUserID, _ := user.CreateUser(database, newUser)
+
+	walletID, _ := CreateWallet(database, newUserID)
+
+	initialMoney, _ := money.NewMoney(100, "INR")
+
+	err = AddMoneyToWallet(database, walletID, *initialMoney)
+	if err != nil {
+		t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
+	}
+
+	withdrawMoney, _ := money.NewMoney(150, "INR")
+
+	_, err = WithdrawMoneyFromWallet(database, walletID, *withdrawMoney)
+	if err == nil {
+		t.Error("WithdrawMoneyFromWallet() error = nil, want an error")
+	}
+}
