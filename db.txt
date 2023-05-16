@@ -8,5 +8,7 @@ CREATE TABLE wallet (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
     amount BIGINT NOT NULL,
-    currency TEXT NOT NULL
+    currency TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT now(),
+    updated_at TIMESTAMP DEFAULT now()
 );

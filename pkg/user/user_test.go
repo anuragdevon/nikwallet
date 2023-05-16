@@ -16,13 +16,13 @@ func TestCreateUserToCreateAValidUser(t *testing.T) {
 		EmailID:  "test2@example.com",
 		Password: "test123",
 	}
-	err = CreateUser(database, user)
+	userID, err := CreateUser(database, user)
 	if err != nil {
 		t.Errorf("CreateUser() error = %v, want nil", err)
 		return
 	}
 
-	if user.ID == 0 {
+	if userID == 0 {
 		t.Errorf("CreateUser() did not set user ID")
 	}
 }
@@ -39,7 +39,7 @@ func TestCreateUserToReturnErrorWithDuplicateEmail(t *testing.T) {
 		Password: "password123",
 	}
 
-	err = CreateUser(db, user)
+	_, err = CreateUser(db, user)
 	if err != nil {
 		t.Fatalf("Failed to create user: %v", err)
 	}
@@ -49,7 +49,7 @@ func TestCreateUserToReturnErrorWithDuplicateEmail(t *testing.T) {
 		Password: "password456",
 	}
 
-	err = CreateUser(db, duplicateUser)
+	_, err = CreateUser(db, duplicateUser)
 	if err == nil {
 		t.Fatalf("Expected to return err with duplicate email")
 	}
@@ -66,12 +66,12 @@ func TestGetUserByIDToReturnValidUser(t *testing.T) {
 		EmailID:  "test4@example.com",
 		Password: "test123",
 	}
-	err = CreateUser(database, user)
+	userID, err := CreateUser(database, user)
 	if err != nil {
 		t.Fatalf("failed to create user: %v", err)
 	}
 
-	fetchedUser, err := GetUserByID(database, user.ID)
+	fetchedUser, err := GetUserByID(database, userID)
 	if err != nil {
 		t.Fatalf("GetUserByID() error = %v, want nil", err)
 	}
