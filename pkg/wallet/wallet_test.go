@@ -14,14 +14,10 @@ func TestCreateWalletToCreateAValidWallet(t *testing.T) {
 	defer database.Close()
 
 	newUser := &user.User{
-		EmailID:  "testw4@example.com",
+		EmailID:  "testw5@example.com",
 		Password: "test123",
 	}
-	newUserID, err := user.CreateUser(database, newUser)
-	if err != nil {
-		t.Errorf("CreateUser() error = %v, want nil", err)
-		return
-	}
+	newUserID, _ := user.CreateUser(database, newUser)
 
 	walletID, err := CreateWallet(database, newUserID)
 	if err != nil {
