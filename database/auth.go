@@ -1,4 +1,4 @@
-package auth
+package database
 
 import (
 	"errors"
@@ -6,8 +6,6 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
-
-	user "nikwallet/pkg/user"
 )
 
 var signingKey = []byte("secret-key")
@@ -17,8 +15,8 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func AuthenticateUser(email string, password string) (string, error) {
-	u, err := user.GetUserByEmail(email)
+func (db *PostgreSQL) AuthenticateUser(email string, password string) (string, error) {
+	u, err := db.GetUserByEmail(email)
 	if err != nil {
 		return "", err
 	}
@@ -41,7 +39,7 @@ func AuthenticateUser(email string, password string) (string, error) {
 	return tokenString, nil
 }
 
-func VerifyToken(tokenString string) (*Claims, int, error) {
+func (db *PostgreSQL) VerifyToken(tokenString string) (*Claims, int, error) {
 	token, err := jwt.ParseWithClaims(tokenString, &Claims{}, func(token *jwt.Token) (interface{}, error) {
 		return signingKey, nil
 	})

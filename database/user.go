@@ -1,8 +1,7 @@
-package user
+package database
 
 import (
 	"fmt"
-	"nikwallet/pkg/db"
 )
 
 type User struct {
@@ -11,16 +10,16 @@ type User struct {
 	Password string
 }
 
-func CreateUser(user *User) (int, error) {
+func (db *PostgreSQL) CreateUser(newUser *User) (int, error) {
 	query := `INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id`
-	err := db.DB.QueryRow(query, user.EmailID, user.Password).Scan(&user.ID)
+	err := db.DB.QueryRow(query, newUser.EmailID, newUser.Password).Scan(&newUser.ID)
 	if err != nil {
 		return 0, fmt.Errorf("failed to create user: %w", err)
 	}
-	return user.ID, nil
+	return newUser.ID, nil
 }
 
-func GetUserByID(id int) (*User, error) {
+func (db *PostgreSQL) GetUserByID(id int) (*User, error) {
 	query := `SELECT id, email, password FROM users WHERE id=$1`
 	user := &User{}
 
@@ -31,7 +30,7 @@ func GetUserByID(id int) (*User, error) {
 	return user, nil
 }
 
-func GetUserByEmail(email string) (*User, error) {
+func (db *PostgreSQL) GetUserByEmail(email string) (*User, error) {
 	query := `SELECT id, email, password FROM users WHERE email=$1`
 	user := &User{}
 

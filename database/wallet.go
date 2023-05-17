@@ -1,12 +1,10 @@
-package wallet
+package database
 
 import (
 	"fmt"
-	"nikwallet/pkg/db"
 	"time"
 
-	"nikwallet/pkg/money"
-	user "nikwallet/pkg/user"
+	"nikwallet/database/money"
 )
 
 type Wallet struct {
@@ -17,8 +15,8 @@ type Wallet struct {
 	UpdatedAt time.Time
 }
 
-func CreateWallet(userID int) (int, error) {
-	_, err := user.GetUserByID(userID)
+func (db *PostgreSQL) CreateWallet(userID int) (int, error) {
+	_, err := db.GetUserByID(userID)
 	if err != nil {
 		return 0, err
 	}
@@ -42,7 +40,7 @@ func CreateWallet(userID int) (int, error) {
 	return wallet.ID, nil
 }
 
-func GetWalletByID(walletID int) (*Wallet, error) {
+func (db *PostgreSQL) GetWalletByID(walletID int) (*Wallet, error) {
 	wallet := &Wallet{}
 	query := `SELECT id, user_id, amount, currency, created_at, updated_at FROM wallet WHERE id = $1`
 	err := db.DB.QueryRow(query, walletID).
@@ -53,8 +51,8 @@ func GetWalletByID(walletID int) (*Wallet, error) {
 	return wallet, nil
 }
 
-func AddMoneyToWallet(walletID int, moneyToAdd money.Money) error {
-	wallet, err := GetWalletByID(walletID)
+func (db *PostgreSQL) AddMoneyToWallet(walletID int, moneyToAdd money.Money) error {
+	wallet, err := db.GetWalletByID(walletID)
 	if err != nil {
 		return err
 	}
@@ -73,8 +71,8 @@ func AddMoneyToWallet(walletID int, moneyToAdd money.Money) error {
 	return nil
 }
 
-func WithdrawMoneyFromWallet(walletID int, moneyToWithdraw money.Money) (money.Money, error) {
-	wallet, err := GetWalletByID(walletID)
+func (db *PostgreSQL) WithdrawMoneyFromWallet(walletID int, moneyToWithdraw money.Money) (money.Money, error) {
+	wallet, err := db.GetWalletByID(walletID)
 	if err != nil {
 		return money.Money{}, err
 	}
