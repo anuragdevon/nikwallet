@@ -10,18 +10,12 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"nikwallet/handlers"
-	"nikwallet/pkg/db"
 	"nikwallet/services"
 )
 
 func TestSignupHandler(t *testing.T) {
-	database, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer database.Close()
-	userService := services.NewUserService(database)
-	authService := services.NewAuthService(database)
+	userService := services.NewUserService()
+	authService := services.NewAuthService()
 	userHandlers := handlers.NewUserHandlers(userService, authService)
 
 	signupRequest := map[string]interface{}{
@@ -50,14 +44,8 @@ func TestSignupHandler(t *testing.T) {
 }
 
 func TestSigninHandler(t *testing.T) {
-
-	database, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer database.Close()
-	userService := services.NewUserService(database)
-	authService := services.NewAuthService(database)
+	userService := services.NewUserService()
+	authService := services.NewAuthService()
 	userHandlers := handlers.NewUserHandlers(userService, authService)
 
 	signinRequest := map[string]interface{}{

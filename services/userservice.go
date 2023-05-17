@@ -1,26 +1,24 @@
 package services
 
 import (
-	"nikwallet/pkg/db"
 	"nikwallet/pkg/user"
 )
 
 type UserService struct {
-	db *db.DB
 }
 
-func NewUserService(database *db.DB) *UserService {
-	return &UserService{db: database}
+func NewUserService() *UserService {
+	return &UserService{}
 }
 
 func (us *UserService) CreateUser(newUser *user.User) (int, error) {
-	return user.CreateUser(us.db, newUser)
+	return user.CreateUser(newUser)
 }
 
 func (us *UserService) GetUserByID(id int) (*user.User, error) {
-	return user.GetUserByID(us.db, id)
+	return user.GetUserByID(id)
 }
 
 func (us *UserService) GetUserByEmail(email string) (*user.User, error) {
-	return user.GetUserByEmail(us.db, email)
+	return user.GetUserByEmail(email)
 }

@@ -12,21 +12,15 @@ import (
 
 	"nikwallet/handlers"
 	"nikwallet/pkg/auth"
-	"nikwallet/pkg/db"
 	"nikwallet/pkg/money"
 	"nikwallet/pkg/user"
 	"nikwallet/services"
 )
 
 func TestCreateWalletHandlerToSuccessfullyCreateWallet(t *testing.T) {
-	database, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer database.Close()
-	userService := services.NewUserService(database)
-	authService := services.NewAuthService(database)
-	walletService := services.NewWalletService(database)
+	userService := services.NewUserService()
+	authService := services.NewAuthService()
+	walletService := services.NewWalletService()
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
@@ -35,10 +29,10 @@ func TestCreateWalletHandlerToSuccessfullyCreateWallet(t *testing.T) {
 		Password: "password",
 	}
 
-	_, err = userService.CreateUser(newUser)
+	_, err := userService.CreateUser(newUser)
 	assert.NoError(t, err)
 
-	token, err := auth.AuthenticateUser(database, newUser.EmailID, newUser.Password)
+	token, err := auth.AuthenticateUser(newUser.EmailID, newUser.Password)
 	assert.Nil(t, err)
 	assert.NotNil(t, token)
 
@@ -59,14 +53,9 @@ func TestCreateWalletHandlerToSuccessfullyCreateWallet(t *testing.T) {
 }
 
 func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
-	database, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer database.Close()
-	userService := services.NewUserService(database)
-	authService := services.NewAuthService(database)
-	walletService := services.NewWalletService(database)
+	userService := services.NewUserService()
+	authService := services.NewAuthService()
+	walletService := services.NewWalletService()
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
@@ -81,7 +70,7 @@ func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
 	walletID, err := walletService.CreateWallet(userID)
 	assert.NoError(t, err)
 
-	IDToken, _ := auth.AuthenticateUser(database, newUser.EmailID, newUser.Password)
+	IDToken, _ := auth.AuthenticateUser(newUser.EmailID, newUser.Password)
 	assert.NotNil(t, IDToken)
 
 	addMoneyRequest := money.Money{Amount: 50, Currency: "INR"}
@@ -89,7 +78,7 @@ func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
 	assert.NoError(t, err)
 
 	url := "/add/" + strconv.Itoa(walletID)
-	req, err := http.NewRequest("POST", url, bytes.NewReader(reqBody))
+	req, err := http.NewRequest("PUT", url, bytes.NewReader(reqBody))
 	req.Header.Set("id_token", IDToken)
 	assert.NoError(t, err)
 
@@ -107,14 +96,9 @@ func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
 }
 
 func TestWithdrawMoneyFromWalletHandlerToSuccessfullyWithdrawMoney(t *testing.T) {
-	database, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer database.Close()
-	userService := services.NewUserService(database)
-	authService := services.NewAuthService(database)
-	walletService := services.NewWalletService(database)
+	userService := services.NewUserService()
+	authService := services.NewAuthService()
+	walletService := services.NewWalletService()
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
@@ -129,7 +113,7 @@ func TestWithdrawMoneyFromWalletHandlerToSuccessfullyWithdrawMoney(t *testing.T)
 	walletID, err := walletService.CreateWallet(userID)
 	assert.NoError(t, err)
 
-	IDToken, _ := auth.AuthenticateUser(database, newUser.EmailID, newUser.Password)
+	IDToken, _ := auth.AuthenticateUser(newUser.EmailID, newUser.Password)
 	assert.NotNil(t, IDToken)
 
 	addMoneyRequest := money.Money{Amount: 50, Currency: "INR"}
@@ -141,8 +125,8 @@ func TestWithdrawMoneyFromWalletHandlerToSuccessfullyWithdrawMoney(t *testing.T)
 	reqBody, err := json.Marshal(withdrawMoneyRequest)
 	assert.NoError(t, err)
 
-	url := "/wallets/" + strconv.Itoa(walletID) + "/withdraw"
-	req, err := http.NewRequest("POST", url, bytes.NewReader(reqBody))
+	url := "/wallet/" + strconv.Itoa(walletID) + "/withdraw"
+	req, err := http.NewRequest("PUT", url, bytes.NewReader(reqBody))
 	req.Header.Set("id_token", IDToken)
 	assert.NoError(t, err)
 

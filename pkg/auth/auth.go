@@ -7,7 +7,6 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 
-	"nikwallet/pkg/db"
 	user "nikwallet/pkg/user"
 )
 
@@ -18,8 +17,8 @@ type Claims struct {
 	jwt.StandardClaims
 }
 
-func AuthenticateUser(database *db.DB, email string, password string) (string, error) {
-	u, err := user.GetUserByEmail(database, email)
+func AuthenticateUser(email string, password string) (string, error) {
+	u, err := user.GetUserByEmail(email)
 	if err != nil {
 		return "", err
 	}

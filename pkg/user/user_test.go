@@ -1,23 +1,35 @@
 package user
 
 import (
+	"database/sql"
 	"fmt"
+	"log"
 	"nikwallet/pkg/db"
+	"os"
 	"testing"
 )
 
-func TestCreateUserToCreateAValidUser(t *testing.T) {
-	database, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer database.Close()
+var testDB *sql.DB
 
+func TestMain(m *testing.M) {
+	if err := db.ConnectToDB("testdb"); err != nil {
+		log.Fatalf("failed to connect to test database: %v", err)
+	}
+	testDB = db.DB
+
+	code := m.Run()
+
+	testDB.Close()
+
+	os.Exit(code)
+}
+
+func TestCreateUserToCreateAValidUser(t *testing.T) {
 	user := &User{
 		EmailID:  "test2@example.com",
 		Password: "test123",
 	}
-	userID, err := CreateUser(database, user)
+	userID, err := CreateUser(user)
 	if err != nil {
 		t.Errorf("CreateUser() error = %v, want nil", err)
 		return
@@ -29,18 +41,12 @@ func TestCreateUserToCreateAValidUser(t *testing.T) {
 }
 
 func TestCreateUserToReturnErrorWithDuplicateEmail(t *testing.T) {
-	db, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("Failed to connect to database: %v", err)
-	}
-	defer db.Close()
-
 	user := &User{
 		EmailID:  "anuragkar1@gmail.com",
 		Password: "password123",
 	}
 
-	_, err = CreateUser(db, user)
+	_, err := CreateUser(user)
 	if err != nil {
 		t.Fatalf("Failed to create user: %v", err)
 	}
@@ -50,29 +56,23 @@ func TestCreateUserToReturnErrorWithDuplicateEmail(t *testing.T) {
 		Password: "password456",
 	}
 
-	_, err = CreateUser(db, duplicateUser)
+	_, err = CreateUser(duplicateUser)
 	if err == nil {
 		t.Fatalf("Expected to return err with duplicate email")
 	}
 }
 
 func TestGetUserByIDToReturnValidUser(t *testing.T) {
-	database, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer database.Close()
-
 	user := &User{
 		EmailID:  "test4@example.com",
 		Password: "test123",
 	}
-	userID, err := CreateUser(database, user)
+	userID, err := CreateUser(user)
 	if err != nil {
 		t.Fatalf("failed to create user: %v", err)
 	}
 
-	fetchedUser, err := GetUserByID(database, userID)
+	fetchedUser, err := GetUserByID(userID)
 	if err != nil {
 		t.Fatalf("GetUserByID() error = %v, want nil", err)
 	}
@@ -82,23 +82,15 @@ func TestGetUserByIDToReturnValidUser(t *testing.T) {
 	}
 }
 
-func TestGetUserByEmail(t *testing.T) {
-	database, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer database.Close()
-
-	// Insert a test user into the database
+func TestGetUserByEmailToReturnValidUser(t *testing.T) {
 	userEmail := "testuser99@example.com"
 	userPassword := "password123"
-	userID, err := CreateUser(database, &User{EmailID: userEmail, Password: userPassword})
+	userID, err := CreateUser(&User{EmailID: userEmail, Password: userPassword})
 	if err != nil {
 		t.Fatalf("failed to create test user: %v", err)
 	}
 
-	// Test getting the user by email
-	user, err := GetUserByEmail(database, userEmail)
+	user, err := GetUserByEmail(userEmail)
 	if err != nil {
 		t.Fatalf("failed to get user by email: %v", err)
 	}
@@ -112,16 +104,9 @@ func TestGetUserByEmail(t *testing.T) {
 	}
 }
 
-func TestGetUserByEmailNotFound(t *testing.T) {
-	database, err := db.ConnectToDB("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer database.Close()
-
-	// Test getting a user that doesn't exist
+func TestGetUserByEmailToReturnErrorForInvalidEmail(t *testing.T) {
 	userEmail := "nonexistent@example.com"
-	_, err = GetUserByEmail(database, userEmail)
+	_, err := GetUserByEmail(userEmail)
 	if err == nil {
 		t.Fatalf("expected GetUserByEmail() to return an error, but got nil")
 	}
