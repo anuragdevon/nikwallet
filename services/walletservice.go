@@ -1,8 +1,8 @@
 package services
 
 import (
-	"nikwallet/pkg/money"
-	"nikwallet/pkg/wallet"
+	"nikwallet/database"
+	"nikwallet/database/money"
 
 	"database/sql"
 )
@@ -15,18 +15,22 @@ func NewWalletService(db *sql.DB) *WalletService {
 	return &WalletService{db}
 }
 
-func (s *WalletService) CreateWallet(userID int) (int, error) {
-	return wallet.CreateWallet(userID)
+func (ws *WalletService) CreateWallet(userID int) (int, error) {
+	db := database.PostgreSQL{DB: ws.db}
+	return db.CreateWallet(userID)
 }
 
-func (s *WalletService) GetWalletByID(walletID int) (*wallet.Wallet, error) {
-	return wallet.GetWalletByID(walletID)
+func (ws *WalletService) GetWalletByID(walletID int) (*database.Wallet, error) {
+	db := database.PostgreSQL{DB: ws.db}
+	return db.GetWalletByID(walletID)
 }
 
-func (s *WalletService) AddMoneyToWallet(walletID int, moneyToAdd money.Money) error {
-	return wallet.AddMoneyToWallet(walletID, moneyToAdd)
+func (ws *WalletService) AddMoneyToWallet(walletID int, moneyToAdd money.Money) error {
+	db := database.PostgreSQL{DB: ws.db}
+	return db.AddMoneyToWallet(walletID, moneyToAdd)
 }
 
-func (s *WalletService) WithdrawMoneyFromWallet(walletID int, moneyToWithdraw money.Money) (money.Money, error) {
-	return wallet.WithdrawMoneyFromWallet(walletID, moneyToWithdraw)
+func (ws *WalletService) WithdrawMoneyFromWallet(walletID int, moneyToWithdraw money.Money) (money.Money, error) {
+	db := database.PostgreSQL{DB: ws.db}
+	return db.WithdrawMoneyFromWallet(walletID, moneyToWithdraw)
 }

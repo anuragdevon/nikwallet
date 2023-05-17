@@ -2,7 +2,7 @@ package services
 
 import (
 	"database/sql"
-	"nikwallet/pkg/user"
+	"nikwallet/database"
 )
 
 type UserService struct {
@@ -13,14 +13,17 @@ func NewUserService(db *sql.DB) *UserService {
 	return &UserService{db: db}
 }
 
-func (us *UserService) CreateUser(newUser *user.User) (int, error) {
-	return user.CreateUser(newUser)
+func (us *UserService) CreateUser(newUser *database.User) (int, error) {
+	db := database.PostgreSQL{DB: us.db}
+	return db.CreateUser(newUser)
 }
 
-func (us *UserService) GetUserByID(id int) (*user.User, error) {
-	return user.GetUserByID(id)
+func (us *UserService) GetUserByID(id int) (*database.User, error) {
+	db := database.PostgreSQL{DB: us.db}
+	return db.GetUserByID(id)
 }
 
-func (us *UserService) GetUserByEmail(email string) (*user.User, error) {
-	return user.GetUserByEmail(email)
+func (us *UserService) GetUserByEmail(email string) (*database.User, error) {
+	db := database.PostgreSQL{DB: us.db}
+	return db.GetUserByEmail(email)
 }

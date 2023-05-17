@@ -2,7 +2,7 @@ package services
 
 import (
 	"database/sql"
-	"nikwallet/pkg/auth"
+	"nikwallet/database"
 )
 
 type AuthService struct {
@@ -14,9 +14,11 @@ func NewAuthService(database *sql.DB) *AuthService {
 }
 
 func (as *AuthService) AuthenticateUser(email string, password string) (string, error) {
-	return auth.AuthenticateUser(email, password)
+	db := database.PostgreSQL{DB: as.db}
+	return db.AuthenticateUser(email, password)
 }
 
-func (as *AuthService) VerifyToken(tokenString string) (*auth.Claims, int, error) {
-	return auth.VerifyToken(tokenString)
+func (as *AuthService) VerifyToken(tokenString string) (*database.Claims, int, error) {
+	db := database.PostgreSQL{DB: as.db}
+	return db.VerifyToken(tokenString)
 }
