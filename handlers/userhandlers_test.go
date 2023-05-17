@@ -29,7 +29,7 @@ func TestUserHandlers(t *testing.T) {
 
 	t.Run("SignupHandler", func(t *testing.T) {
 		signupRequest := map[string]interface{}{
-			"email_id": "test@example.com",
+			"email_id": "testhello123@example.com",
 			"password": "password123",
 		}
 
@@ -55,7 +55,7 @@ func TestUserHandlers(t *testing.T) {
 
 	t.Run("SigninHandler", func(t *testing.T) {
 		signinRequest := map[string]interface{}{
-			"email_id": "testhello@example.com",
+			"email_id": "testhello321@example.com",
 			"password": "password123",
 		}
 
