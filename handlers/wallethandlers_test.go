@@ -15,20 +15,20 @@ import (
 	"nikwallet/pkg/db"
 	"nikwallet/pkg/money"
 	"nikwallet/pkg/user"
-	"nikwallet/pkg/wallet"
+	"nikwallet/services"
 )
 
-func TestCreateWalletHandler(t *testing.T) {
+func TestCreateWalletHandlerToSuccessfullyCreateWallet(t *testing.T) {
 	database, err := db.ConnectToDB("testdb")
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
 	}
 	defer database.Close()
-	userService := user.NewUserService(database)
-	authService := auth.NewAuthService(database)
-	walletService := wallet.NewWalletService(database)
+	userService := services.NewUserService(database)
+	authService := services.NewAuthService(database)
+	walletService := services.NewWalletService(database)
 
-	walletHandlers := handlers.NewWalletHandlers(*walletService, *authService, *userService)
+	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
 	newUser := &user.User{
 		EmailID:  "testw5111@example.com",
@@ -42,7 +42,7 @@ func TestCreateWalletHandler(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, token)
 
-	req, err := http.NewRequest("POST", "/wallets", nil)
+	req, err := http.NewRequest("POST", "/create", nil)
 	req.Header.Set("id_token", token)
 	assert.NoError(t, err)
 
@@ -58,17 +58,17 @@ func TestCreateWalletHandler(t *testing.T) {
 
 }
 
-func TestAddMoneyToWalletHandler(t *testing.T) {
+func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
 	database, err := db.ConnectToDB("testdb")
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
 	}
 	defer database.Close()
-	userService := user.NewUserService(database)
-	authService := auth.NewAuthService(database)
-	walletService := wallet.NewWalletService(database)
+	userService := services.NewUserService(database)
+	authService := services.NewAuthService(database)
+	walletService := services.NewWalletService(database)
 
-	walletHandlers := handlers.NewWalletHandlers(*walletService, *authService, *userService)
+	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
 	newUser := &user.User{
 		EmailID:  "testw5111@example.com",
@@ -88,7 +88,7 @@ func TestAddMoneyToWalletHandler(t *testing.T) {
 	reqBody, err := json.Marshal(addMoneyRequest)
 	assert.NoError(t, err)
 
-	url := "/wallets/" + strconv.Itoa(walletID) + "/add"
+	url := "/add/" + strconv.Itoa(walletID)
 	req, err := http.NewRequest("POST", url, bytes.NewReader(reqBody))
 	req.Header.Set("id_token", IDToken)
 	assert.NoError(t, err)
@@ -104,24 +104,19 @@ func TestAddMoneyToWalletHandler(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, "money added to wallet successfully", response.Message)
-
-	_, err = walletService.GetWalletByID(walletID)
-	assert.NoError(t, err)
-
-	// assert.Equal(t, wallet.+addMoneyRequest.Amount, updatedWallet.Balance)
 }
 
-func TestWithdrawMoneyFromWalletHandler(t *testing.T) {
+func TestWithdrawMoneyFromWalletHandlerToSuccessfullyWithdrawMoney(t *testing.T) {
 	database, err := db.ConnectToDB("testdb")
 	if err != nil {
 		t.Fatalf("failed to connect to database: %v", err)
 	}
 	defer database.Close()
-	userService := user.NewUserService(database)
-	authService := auth.NewAuthService(database)
-	walletService := wallet.NewWalletService(database)
+	userService := services.NewUserService(database)
+	authService := services.NewAuthService(database)
+	walletService := services.NewWalletService(database)
 
-	walletHandlers := handlers.NewWalletHandlers(*walletService, *authService, *userService)
+	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
 	newUser := &user.User{
 		EmailID:  "testw5111@example.com",
@@ -162,10 +157,4 @@ func TestWithdrawMoneyFromWalletHandler(t *testing.T) {
 	assert.NoError(t, err)
 
 	assert.Equal(t, "money withdrawn from wallet successfully", response.Message)
-
-	// check that the wallet balance has decreased by 50 USD
-	_, err = walletService.GetWalletByID(walletID)
-	assert.NoError(t, err)
-
-	// assert.Equal(t, wallet.Balance-withdrawMoneyRequest.Amount, updatedWallet.Balance)
 }

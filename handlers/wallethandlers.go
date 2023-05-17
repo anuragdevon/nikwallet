@@ -11,12 +11,12 @@ import (
 )
 
 type WalletHandlers struct {
-	walletService services.WalletService
-	authService   services.AuthService
-	userService   services.UserService
+	walletService *services.WalletService
+	authService   *services.AuthService
+	userService   *services.UserService
 }
 
-func NewWalletHandlers(walletService services.WalletService, authService services.AuthService, userService services.UserService) *WalletHandlers {
+func NewWalletHandlers(walletService *services.WalletService, authService *services.AuthService, userService *services.UserService) *WalletHandlers {
 	return &WalletHandlers{
 		walletService: walletService,
 		authService:   authService,

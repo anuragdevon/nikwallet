@@ -3,18 +3,18 @@ package routers
 import (
 	"net/http"
 
-	"nikwallet/services"
+	"nikwallet/handlers"
 
 	"github.com/gorilla/mux"
 )
 
-func NewRouter(userService *services.UserService, authService *services.AuthService, walletService *services.WalletService) *mux.Router {
+func NewRouter(userHandlers *handlers.UserHandlers, walletHandlers *handlers.WalletHandlers) *mux.Router {
 	router := mux.NewRouter()
 
-	userRouter := NewUserRouter(userService, authService)
+	userRouter := NewUserRouter(userHandlers)
 	router.PathPrefix("/user").Handler(http.StripPrefix("/user", userRouter))
 
-	walletRouter := NewWalletRouter(walletService, authService)
+	walletRouter := NewWalletRouter(walletHandlers)
 	router.PathPrefix("/wallet").Handler(http.StripPrefix("/wallet", walletRouter))
 
 	return router
