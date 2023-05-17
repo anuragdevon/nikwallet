@@ -3,18 +3,26 @@ package handlers_test
 import (
 	"bytes"
 	"encoding/json"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 
+	"nikwallet/database"
 	"nikwallet/handlers"
-	"nikwallet/pkg/db"
 	"nikwallet/services"
 )
 
 func TestSignupHandler(t *testing.T) {
+	db := &database.PostgreSQL{}
+	err := db.Connect("testdb")
+	if err != nil {
+		log.Panic("failed to connect to database:", err)
+	}
+	defer db.Close()
+
 	userService := services.NewUserService(db.DB)
 	authService := services.NewAuthService(db.DB)
 	userHandlers := handlers.NewUserHandlers(userService, authService)
@@ -45,6 +53,13 @@ func TestSignupHandler(t *testing.T) {
 }
 
 func TestSigninHandler(t *testing.T) {
+	db := &database.PostgreSQL{}
+	err := db.Connect("testdb")
+	if err != nil {
+		log.Panic("failed to connect to database:", err)
+	}
+	defer db.Close()
+
 	userService := services.NewUserService(db.DB)
 	authService := services.NewAuthService(db.DB)
 	userHandlers := handlers.NewUserHandlers(userService, authService)

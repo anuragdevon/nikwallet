@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -10,22 +11,21 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
+	"nikwallet/database"
+	"nikwallet/database/money"
 	"nikwallet/handlers"
-	"nikwallet/pkg/auth"
-	"nikwallet/pkg/db"
-	"nikwallet/pkg/money"
-	"nikwallet/pkg/user"
 	"nikwallet/services"
 )
 
 func TestCreateWalletHandlerToSuccessfullyCreateWallet(t *testing.T) {
-	userService := services.NewUserService(db.DB)
-	authService := services.NewAuthService(db.DB)
-	walletService := services.NewWalletService(db.DB)
+
+	userService := services.NewUserService(&sql.DB{})
+	authService := services.NewAuthService(&sql.DB{})
+	walletService := services.NewWalletService(&sql.DB{})
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
-	newUser := &user.User{
+	newUser := &database.User{
 		EmailID:  "testw5111@example.com",
 		Password: "password",
 	}
@@ -33,7 +33,7 @@ func TestCreateWalletHandlerToSuccessfullyCreateWallet(t *testing.T) {
 	_, err := userService.CreateUser(newUser)
 	assert.NoError(t, err)
 
-	token, err := auth.AuthenticateUser(newUser.EmailID, newUser.Password)
+	token, err := authService.AuthenticateUser(newUser.EmailID, newUser.Password)
 	assert.Nil(t, err)
 	assert.NotNil(t, token)
 
@@ -54,13 +54,13 @@ func TestCreateWalletHandlerToSuccessfullyCreateWallet(t *testing.T) {
 }
 
 func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
-	userService := services.NewUserService(db.DB)
-	authService := services.NewAuthService(db.DB)
-	walletService := services.NewWalletService(db.DB)
+	userService := services.NewUserService(&sql.DB{})
+	authService := services.NewAuthService(&sql.DB{})
+	walletService := services.NewWalletService(&sql.DB{})
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
-	newUser := &user.User{
+	newUser := &database.User{
 		EmailID:  "testw5111@example.com",
 		Password: "password",
 	}
@@ -71,7 +71,7 @@ func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
 	walletID, err := walletService.CreateWallet(userID)
 	assert.NoError(t, err)
 
-	IDToken, _ := auth.AuthenticateUser(newUser.EmailID, newUser.Password)
+	IDToken, _ := authService.AuthenticateUser(newUser.EmailID, newUser.Password)
 	assert.NotNil(t, IDToken)
 
 	addMoneyRequest := money.Money{Amount: 50, Currency: "INR"}
@@ -97,13 +97,13 @@ func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
 }
 
 func TestWithdrawMoneyFromWalletHandlerToSuccessfullyWithdrawMoney(t *testing.T) {
-	userService := services.NewUserService(db.DB)
-	authService := services.NewAuthService(db.DB)
-	walletService := services.NewWalletService(db.DB)
+	userService := services.NewUserService(&sql.DB{})
+	authService := services.NewAuthService(&sql.DB{})
+	walletService := services.NewWalletService(&sql.DB{})
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
-	newUser := &user.User{
+	newUser := &database.User{
 		EmailID:  "testw5111@example.com",
 		Password: "password",
 	}
@@ -114,7 +114,7 @@ func TestWithdrawMoneyFromWalletHandlerToSuccessfullyWithdrawMoney(t *testing.T)
 	walletID, err := walletService.CreateWallet(userID)
 	assert.NoError(t, err)
 
-	IDToken, _ := auth.AuthenticateUser(newUser.EmailID, newUser.Password)
+	IDToken, _ := authService.AuthenticateUser(newUser.EmailID, newUser.Password)
 	assert.NotNil(t, IDToken)
 
 	addMoneyRequest := money.Money{Amount: 50, Currency: "INR"}

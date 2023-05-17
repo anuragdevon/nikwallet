@@ -3,7 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"nikwallet/pkg/money"
+	"nikwallet/database/money"
 	"nikwallet/services"
 	"strconv"
 

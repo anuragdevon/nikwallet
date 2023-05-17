@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"nikwallet/pkg/user"
+	"nikwallet/database"
 	"nikwallet/services"
 )
 
@@ -21,7 +21,7 @@ func NewUserHandlers(userService *services.UserService, authService *services.Au
 }
 
 func (uh *UserHandlers) SignupHandler(w http.ResponseWriter, r *http.Request) {
-	var u user.User
+	var u database.User
 
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -47,7 +47,7 @@ func (uh *UserHandlers) SignupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func (uh *UserHandlers) SigninHandler(w http.ResponseWriter, r *http.Request) {
-	var u user.User
+	var u database.User
 
 	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
