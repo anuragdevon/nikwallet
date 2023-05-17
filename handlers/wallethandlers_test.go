@@ -12,15 +12,16 @@ import (
 
 	"nikwallet/handlers"
 	"nikwallet/pkg/auth"
+	"nikwallet/pkg/db"
 	"nikwallet/pkg/money"
 	"nikwallet/pkg/user"
 	"nikwallet/services"
 )
 
 func TestCreateWalletHandlerToSuccessfullyCreateWallet(t *testing.T) {
-	userService := services.NewUserService()
-	authService := services.NewAuthService()
-	walletService := services.NewWalletService()
+	userService := services.NewUserService(db.DB)
+	authService := services.NewAuthService(db.DB)
+	walletService := services.NewWalletService(db.DB)
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
@@ -53,9 +54,9 @@ func TestCreateWalletHandlerToSuccessfullyCreateWallet(t *testing.T) {
 }
 
 func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
-	userService := services.NewUserService()
-	authService := services.NewAuthService()
-	walletService := services.NewWalletService()
+	userService := services.NewUserService(db.DB)
+	authService := services.NewAuthService(db.DB)
+	walletService := services.NewWalletService(db.DB)
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
@@ -96,9 +97,9 @@ func TestAddMoneyToWalletHandlerToSuccessfullyAddMoney(t *testing.T) {
 }
 
 func TestWithdrawMoneyFromWalletHandlerToSuccessfullyWithdrawMoney(t *testing.T) {
-	userService := services.NewUserService()
-	authService := services.NewAuthService()
-	walletService := services.NewWalletService()
+	userService := services.NewUserService(db.DB)
+	authService := services.NewAuthService(db.DB)
+	walletService := services.NewWalletService(db.DB)
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 

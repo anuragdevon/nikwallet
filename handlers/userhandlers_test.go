@@ -10,12 +10,13 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	"nikwallet/handlers"
+	"nikwallet/pkg/db"
 	"nikwallet/services"
 )
 
 func TestSignupHandler(t *testing.T) {
-	userService := services.NewUserService()
-	authService := services.NewAuthService()
+	userService := services.NewUserService(db.DB)
+	authService := services.NewAuthService(db.DB)
 	userHandlers := handlers.NewUserHandlers(userService, authService)
 
 	signupRequest := map[string]interface{}{
@@ -44,12 +45,12 @@ func TestSignupHandler(t *testing.T) {
 }
 
 func TestSigninHandler(t *testing.T) {
-	userService := services.NewUserService()
-	authService := services.NewAuthService()
+	userService := services.NewUserService(db.DB)
+	authService := services.NewAuthService(db.DB)
 	userHandlers := handlers.NewUserHandlers(userService, authService)
 
 	signinRequest := map[string]interface{}{
-		"email_id": "test@example.com",
+		"email_id": "testhello@example.com",
 		"password": "password123",
 	}
 

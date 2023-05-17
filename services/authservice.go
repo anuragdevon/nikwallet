@@ -1,14 +1,16 @@
 package services
 
 import (
+	"database/sql"
 	"nikwallet/pkg/auth"
 )
 
 type AuthService struct {
+	db *sql.DB
 }
 
-func NewAuthService() *AuthService {
-	return &AuthService{}
+func NewAuthService(database *sql.DB) *AuthService {
+	return &AuthService{db: database}
 }
 
 func (as *AuthService) AuthenticateUser(email string, password string) (string, error) {

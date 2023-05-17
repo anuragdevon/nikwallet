@@ -1,14 +1,16 @@
 package services
 
 import (
+	"database/sql"
 	"nikwallet/pkg/user"
 )
 
 type UserService struct {
+	db *sql.DB
 }
 
-func NewUserService() *UserService {
-	return &UserService{}
+func NewUserService(db *sql.DB) *UserService {
+	return &UserService{db: db}
 }
 
 func (us *UserService) CreateUser(newUser *user.User) (int, error) {

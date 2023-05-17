@@ -2,15 +2,17 @@ package services
 
 import (
 	"nikwallet/pkg/money"
-	"nikwallet/pkg/user"
 	"nikwallet/pkg/wallet"
+
+	"database/sql"
 )
 
 type WalletService struct {
+	db *sql.DB
 }
 
-func NewWalletService() *WalletService {
-	return &WalletService{}
+func NewWalletService(db *sql.DB) *WalletService {
+	return &WalletService{db}
 }
 
 func (s *WalletService) CreateWallet(userID int) (int, error) {
@@ -27,8 +29,4 @@ func (s *WalletService) AddMoneyToWallet(walletID int, moneyToAdd money.Money) e
 
 func (s *WalletService) WithdrawMoneyFromWallet(walletID int, moneyToWithdraw money.Money) (money.Money, error) {
 	return wallet.WithdrawMoneyFromWallet(walletID, moneyToWithdraw)
-}
-
-func (s *WalletService) GetUserByID(userID int) (*user.User, error) {
-	return user.GetUserByID(userID)
 }

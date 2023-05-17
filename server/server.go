@@ -12,14 +12,15 @@ import (
 )
 
 func StartServer() {
-	database, err := db.ConnectToDB("testdb")
+	err := db.ConnectToDB("testdb")
 	if err != nil {
-		log.Panic("failed to connect to database:")
+		log.Panic("failed to connect to database:", err)
 	}
-	defer database.Close()
-	userService := services.NewUserService(database)
-	authService := services.NewAuthService(database)
-	walletService := services.NewWalletService(database)
+	defer db.DB.Close()
+
+	userService := services.NewUserService(db.DB)
+	authService := services.NewAuthService(db.DB)
+	walletService := services.NewWalletService(db.DB)
 
 	userHandlers := handlers.NewUserHandlers(userService, authService)
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
