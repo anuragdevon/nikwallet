@@ -15,7 +15,7 @@ import (
 	"nikwallet/services"
 )
 
-func TestSignupHandler(t *testing.T) {
+func TestUserHandlers(t *testing.T) {
 	db := &database.PostgreSQL{}
 	err := db.Connect("testdb")
 	if err != nil {
@@ -27,63 +27,54 @@ func TestSignupHandler(t *testing.T) {
 	authService := services.NewAuthService(db.DB)
 	userHandlers := handlers.NewUserHandlers(userService, authService)
 
-	signupRequest := map[string]interface{}{
-		"email_id": "test@example.com",
-		"password": "password123",
-	}
+	t.Run("SignupHandler", func(t *testing.T) {
+		signupRequest := map[string]interface{}{
+			"email_id": "test@example.com",
+			"password": "password123",
+		}
 
-	reqBody, err := json.Marshal(signupRequest)
-	assert.NoError(t, err)
+		reqBody, err := json.Marshal(signupRequest)
+		assert.NoError(t, err)
 
-	req, err := http.NewRequest("POST", "/signup", bytes.NewReader(reqBody))
-	assert.NoError(t, err)
+		req, err := http.NewRequest("POST", "/signup", bytes.NewReader(reqBody))
+		assert.NoError(t, err)
 
-	recorder := httptest.NewRecorder()
+		recorder := httptest.NewRecorder()
 
-	http.HandlerFunc(userHandlers.SignupHandler).ServeHTTP(recorder, req)
+		http.HandlerFunc(userHandlers.SignupHandler).ServeHTTP(recorder, req)
 
-	assert.Equal(t, http.StatusCreated, recorder.Code)
+		assert.Equal(t, http.StatusCreated, recorder.Code)
 
-	var responseBody map[string]interface{}
-	err = json.NewDecoder(recorder.Body).Decode(&responseBody)
-	assert.NoError(t, err)
+		var responseBody map[string]interface{}
+		err = json.NewDecoder(recorder.Body).Decode(&responseBody)
+		assert.NoError(t, err)
 
-	assert.Contains(t, responseBody, "user_id")
-	assert.Contains(t, responseBody, "token")
-}
+		assert.Contains(t, responseBody, "user_id")
+		assert.Contains(t, responseBody, "token")
+	})
 
-func TestSigninHandler(t *testing.T) {
-	db := &database.PostgreSQL{}
-	err := db.Connect("testdb")
-	if err != nil {
-		log.Panic("failed to connect to database:", err)
-	}
-	defer db.Close()
+	t.Run("SigninHandler", func(t *testing.T) {
+		signinRequest := map[string]interface{}{
+			"email_id": "testhello@example.com",
+			"password": "password123",
+		}
 
-	userService := services.NewUserService(db.DB)
-	authService := services.NewAuthService(db.DB)
-	userHandlers := handlers.NewUserHandlers(userService, authService)
+		reqBody, err := json.Marshal(signinRequest)
+		assert.NoError(t, err)
 
-	signinRequest := map[string]interface{}{
-		"email_id": "testhello@example.com",
-		"password": "password123",
-	}
+		req, err := http.NewRequest("POST", "/signin", bytes.NewReader(reqBody))
+		assert.NoError(t, err)
 
-	reqBody, err := json.Marshal(signinRequest)
-	assert.NoError(t, err)
+		recorder := httptest.NewRecorder()
 
-	req, err := http.NewRequest("POST", "/signin", bytes.NewReader(reqBody))
-	assert.NoError(t, err)
+		http.HandlerFunc(userHandlers.SigninHandler).ServeHTTP(recorder, req)
 
-	recorder := httptest.NewRecorder()
+		assert.Equal(t, http.StatusOK, recorder.Code)
 
-	http.HandlerFunc(userHandlers.SigninHandler).ServeHTTP(recorder, req)
+		var responseBody map[string]interface{}
+		err = json.NewDecoder(recorder.Body).Decode(&responseBody)
+		assert.NoError(t, err)
 
-	assert.Equal(t, http.StatusOK, recorder.Code)
-
-	var responseBody map[string]interface{}
-	err = json.NewDecoder(recorder.Body).Decode(&responseBody)
-	assert.NoError(t, err)
-
-	assert.Contains(t, responseBody, "token")
+		assert.Contains(t, responseBody, "token")
+	})
 }
