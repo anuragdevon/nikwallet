@@ -54,13 +54,9 @@ func TestUserHandlers(t *testing.T) {
 	})
 
 	t.Run("SignupHandler to return 500 InternalServerError for duplicate user entry", func(t *testing.T) {
-		// Create a user with the specified email ID using SignupHandler
 		newUser := map[string]interface{}{
-			"email_id":   "testhello456@example.com",
-			"password":   "password123",
-			"first_name": "Test",
-			"last_name":  "User",
-			"profession": "Engineer",
+			"email_id": "nikwallet123hello@example.com",
+			"password": "123password",
 		}
 
 		reqBody, err := json.Marshal(newUser)
@@ -76,11 +72,8 @@ func TestUserHandlers(t *testing.T) {
 		assert.Equal(t, http.StatusCreated, recorder.Code)
 
 		duplicateUser := map[string]interface{}{
-			"email_id":   "testhello456@example.com",
-			"password":   "password456",
-			"first_name": "Duplicate",
-			"last_name":  "User",
-			"profession": "Designer",
+			"email_id": "nikwallet123@example.com",
+			"password": "password4561",
 		}
 
 		reqBody, err = json.Marshal(duplicateUser)
@@ -139,5 +132,4 @@ func TestUserHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusUnauthorized, recorder.Code)
 	})
-
 }

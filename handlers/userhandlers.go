@@ -33,11 +33,7 @@ func (uh *UserHandlers) SignupHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	tokenString, err := uh.authService.AuthenticateUser(u.EmailID, u.Password)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
-		return
-	}
+	tokenString, _ := uh.authService.AuthenticateUser(u.EmailID, u.Password)
 
 	w.WriteHeader(http.StatusCreated)
 	json.NewEncoder(w).Encode(map[string]interface{}{

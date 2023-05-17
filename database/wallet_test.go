@@ -46,6 +46,38 @@ func TestWallet(t *testing.T) {
 		}
 	})
 
+	t.Run("GetWalletByUserID method to return valid Wallet for valid userID", func(t *testing.T) {
+		newUser := &User{
+			EmailID:  "testw111@example.com",
+			Password: "test123",
+		}
+		newUserID, _ := db.CreateUser(newUser)
+		walletID, _ := db.CreateWallet(newUserID)
+
+		wallet, err := db.GetWalletByUserID(newUserID)
+		if err != nil {
+			t.Fatalf("Failed to get wallet: %v", err)
+		}
+
+		if wallet.ID != walletID {
+			t.Errorf("Expected wallet ID %d, but got %d", walletID, wallet.ID)
+		}
+		if wallet.UserID != newUserID {
+			t.Errorf("Expected user ID %d, but got %d", newUserID, wallet.UserID)
+		}
+	})
+
+	t.Run("TestPostgreSQL_GetWalletByUserID_NonExistentUser", func(t *testing.T) {
+		_, err = db.GetWalletByUserID(9999)
+		if err == nil {
+			t.Fatal("Expected error, but got nil")
+		}
+		expectedErrMsg := "no wallets found for user with ID 9999"
+		if err.Error() != expectedErrMsg {
+			t.Fatalf("Expected error message '%s', but got '%v'", expectedErrMsg, err)
+		}
+	})
+
 	t.Run("AddMoneyToWallet method to add money to empty wallet", func(t *testing.T) {
 		newUser := &User{
 			EmailID:  "testw13@example.com",

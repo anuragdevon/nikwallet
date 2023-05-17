@@ -51,6 +51,19 @@ func (db *PostgreSQL) GetWalletByID(walletID int) (*Wallet, error) {
 	return wallet, nil
 }
 
+func (db *PostgreSQL) GetWalletByUserID(userID int) (*Wallet, error) {
+	query := `SELECT id, user_id, amount, currency, created_at, updated_at FROM wallet WHERE user_id = $1`
+	row := db.DB.QueryRow(query, userID)
+
+	wallet := &Wallet{}
+	err := row.Scan(&wallet.ID, &wallet.UserID, &wallet.Money.Amount, &wallet.Money.Currency, &wallet.CreatedAt, &wallet.UpdatedAt)
+	if err != nil {
+		return nil, fmt.Errorf("no wallets found for user with ID %d", userID)
+	}
+
+	return wallet, nil
+}
+
 func (db *PostgreSQL) AddMoneyToWallet(walletID int, moneyToAdd money.Money) error {
 	wallet, err := db.GetWalletByID(walletID)
 	if err != nil {

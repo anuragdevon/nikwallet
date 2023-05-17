@@ -1,15 +1,12 @@
 #!/bin/bash
 
-# Set the database name
 DB_NAME="testdb"
 
-# Delete the existing tables
 psql -U postgres -d ${DB_NAME} << EOF
 DROP TABLE IF EXISTS wallet;
 DROP TABLE IF EXISTS users;
 EOF
 
-# Recreate the tables
 psql -U postgres -d ${DB_NAME} << EOF
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
