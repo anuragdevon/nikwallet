@@ -27,7 +27,7 @@ func TestUserHandlers(t *testing.T) {
 	authService := services.NewAuthService(db.DB)
 	userHandlers := handlers.NewUserHandlers(userService, authService)
 
-	t.Run("SignupHandler", func(t *testing.T) {
+	t.Run("SignupHandler to return 201 StatusCreated for valid user creation", func(t *testing.T) {
 		signupRequest := map[string]interface{}{
 			"email_id": "testhello123@example.com",
 			"password": "password123",
@@ -53,7 +53,7 @@ func TestUserHandlers(t *testing.T) {
 		assert.Contains(t, responseBody, "token")
 	})
 
-	t.Run("SigninHandler", func(t *testing.T) {
+	t.Run("SignInHandler to return 200 StatusOk for successful user login", func(t *testing.T) {
 		signinRequest := map[string]interface{}{
 			"email_id": "testhello321@example.com",
 			"password": "password123",
@@ -77,4 +77,24 @@ func TestUserHandlers(t *testing.T) {
 
 		assert.Contains(t, responseBody, "token")
 	})
+
+	t.Run("SigninHandler to return 401 Unauthorized for invalid user credentials", func(t *testing.T) {
+		invalidSigninRequest := map[string]interface{}{
+			"email_id": "testhello321@example.com",
+			"password": "wrongpassword",
+		}
+
+		reqBody, err := json.Marshal(invalidSigninRequest)
+		assert.NoError(t, err)
+
+		req, err := http.NewRequest("POST", "/signin", bytes.NewReader(reqBody))
+		assert.NoError(t, err)
+
+		recorder := httptest.NewRecorder()
+
+		http.HandlerFunc(userHandlers.SigninHandler).ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusUnauthorized, recorder.Code)
+	})
+
 }
