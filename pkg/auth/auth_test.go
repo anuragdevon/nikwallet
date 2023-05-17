@@ -7,7 +7,9 @@ import (
 	"nikwallet/pkg/user"
 	"os"
 	"testing"
+	"time"
 
+	"github.com/dgrijalva/jwt-go"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -71,4 +73,56 @@ func TestAuthenticateUserWithIncorrectEmail(t *testing.T) {
 	token, err := AuthenticateUser("wrong_email", password)
 	assert.NotNil(t, err)
 	assert.Equal(t, "", token)
+}
+
+func TestVerifyTokenWithValidToken(t *testing.T) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
+		UserID: 123,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+		},
+	})
+
+	tokenString, _ := token.SignedString(signingKey)
+
+	claims, userID, err := VerifyToken(tokenString)
+
+	assert.Nil(t, err)
+	assert.NotNil(t, claims)
+	assert.Equal(t, 123, userID)
+}
+
+func TestVerifyTokenWithInvalidToken(t *testing.T) {
+	invalidKey := []byte("invalid key")
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
+		UserID: 123,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
+		},
+	})
+
+	tokenString, _ := token.SignedString(invalidKey)
+
+	claims, userID, err := VerifyToken(tokenString)
+
+	assert.NotNil(t, err)
+	assert.Nil(t, claims)
+	assert.Equal(t, 0, userID)
+}
+
+func TestVerifyTokenWithExpiredToken(t *testing.T) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
+		UserID: 123,
+		StandardClaims: jwt.StandardClaims{
+			ExpiresAt: time.Now().Add(-24 * time.Hour).Unix(),
+		},
+	})
+
+	tokenString, _ := token.SignedString(signingKey)
+
+	claims, userID, err := VerifyToken(tokenString)
+
+	assert.NotNil(t, err)
+	assert.Nil(t, claims)
+	assert.Equal(t, 0, userID)
 }
