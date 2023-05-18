@@ -212,6 +212,60 @@ func TestWallet(t *testing.T) {
 		}
 	})
 
+	t.Run("TransferMoney method to successfully transfer money from sender to receiver having different currencies", func(t *testing.T) {
+		sender := &User{
+			EmailID:  "test_sender222@example.com",
+			Password: "test123",
+		}
+		senderID, _ := db.CreateUser(sender)
+		_, _ = db.CreateWallet(senderID, money.EUR)
+
+		recipient := &User{
+			EmailID:  "test_recipient322@example.com",
+			Password: "test123",
+		}
+		recipientID, _ := db.CreateUser(recipient)
+		_, _ = db.CreateWallet(recipientID, money.USD)
+
+		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.EUR)
+		_ = db.AddMoneyToWallet(senderID, *initialMoney)
+
+		transferAmount, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
+		err := db.TransferMoney(senderID, recipient.EmailID, *transferAmount)
+		if err != nil {
+			t.Fatalf("TransferMoney() error: %v, want nil", err)
+		}
+
+		expectedSenderMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
+		senderWallet, _ := db.GetWalletByUserID(senderID)
+		if !reflect.DeepEqual(&senderWallet.Money, &expectedSenderMoney) {
+			t.Errorf("TransferMoney() sender balance got: %v, want: %v", senderWallet.Money, expectedSenderMoney)
+		}
+
+		expectedRecipientMoney, _ := money.NewMoney(decimal.NewFromFloat(45.83), money.USD)
+		recipientWallet, _ := db.GetWalletByUserID(recipientID)
+		if !reflect.DeepEqual(&recipientWallet.Money, &expectedRecipientMoney) {
+			t.Errorf("TransferMoney() recipient balance got: %v, want: %v", recipientWallet.Money, expectedRecipientMoney)
+		}
+	})
+
+	t.Run("TransferMoney method to successfully transfer money from sender to receiver having different currencies", func(t *testing.T) {
+		sender := &User{
+			EmailID:  "test_sender333@example.com",
+			Password: "test123",
+		}
+		senderID, _ := db.CreateUser(sender)
+		_, _ = db.CreateWallet(senderID, money.EUR)
+
+		wrongRecipientEmail := "wrong_recipient@example.com"
+		wrongTransferAmount, _ := money.NewMoney(decimal.NewFromFloat(20.0), money.EUR)
+		err = db.TransferMoney(senderID, wrongRecipientEmail, *wrongTransferAmount)
+		if err == nil {
+			t.Fatal("TransferMoney() expected error, got nil")
+		}
+
+	})
+
 	t.Run("TransferMoney method should return error for invalid sender ID", func(t *testing.T) {
 		recipient := &User{
 			EmailID:  "test_recipient@example.com",
