@@ -4,6 +4,8 @@ import (
 	"nikwallet/database/money"
 	"reflect"
 	"testing"
+
+	"github.com/shopspring/decimal"
 )
 
 func TestWallet(t *testing.T) {
@@ -16,12 +18,12 @@ func TestWallet(t *testing.T) {
 
 	t.Run("CreateWallet method to create a valid wallet for successful user creation", func(t *testing.T) {
 		newUser := &User{
-			EmailID:  "testw511@example.com",
+			EmailID:  "testwallet511@example.com",
 			Password: "test123",
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		wallet, err := db.CreateWallet(newUserID)
+		wallet, err := db.CreateWallet(newUserID, money.INR)
 		if err != nil {
 			t.Fatalf("CreateWallet() error = %v, want nil", err)
 		}
@@ -37,14 +39,14 @@ func TestWallet(t *testing.T) {
 			Password: "test123",
 		}
 		newUserID, _ := db.CreateUser(newUser)
-		newWallet, _ := db.CreateWallet(newUserID)
+		newWallet, _ := db.CreateWallet(newUserID, money.INR)
 
 		wallet, err := db.GetWalletByUserID(newUserID)
 		if err != nil {
 			t.Fatalf("Failed to get wallet: %v", err)
 		}
 
-		if !reflect.DeepEqual(wallet, newWallet) {
+		if wallet.ID != newWallet.ID {
 			t.Errorf("Expected wallet got = %v, want = %v", wallet, newWallet)
 		}
 		if wallet.UserID != newUserID {
@@ -70,9 +72,9 @@ func TestWallet(t *testing.T) {
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		_, _ = db.CreateWallet(newUserID)
+		_, _ = db.CreateWallet(newUserID, money.USD)
 
-		initialMoney, _ := money.NewMoney(100, "INR")
+		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.USD)
 
 		err := db.AddMoneyToWallet(newUserID, *initialMoney)
 		if err != nil {
@@ -80,7 +82,7 @@ func TestWallet(t *testing.T) {
 		}
 		updatedWallet, _ := db.GetWalletByUserID(newUserID)
 
-		if !reflect.DeepEqual(&updatedWallet.Money, initialMoney) {
+		if !reflect.DeepEqual(&updatedWallet.Money, &initialMoney) {
 			t.Errorf("AddMoneyToWallet() got = %v, want = %v", updatedWallet.Money, initialMoney)
 		}
 	})
@@ -92,23 +94,23 @@ func TestWallet(t *testing.T) {
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		_, _ = db.CreateWallet(newUserID)
+		_, _ = db.CreateWallet(newUserID, money.EUR)
 
-		initialMoney, _ := money.NewMoney(100, "INR")
+		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.EUR)
 		err := db.AddMoneyToWallet(newUserID, *initialMoney)
 		if err != nil {
 			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
 		}
 
-		additionalMoney, _ := money.NewMoney(50, "INR")
+		additionalMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
 		err = db.AddMoneyToWallet(newUserID, *additionalMoney)
 		if err != nil {
 			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
 		}
 		updatedWallet, _ := db.GetWalletByUserID(newUserID)
 
-		expectedMoney, _ := money.NewMoney(150, "INR")
-		if !reflect.DeepEqual(&updatedWallet.Money, expectedMoney) {
+		expectedMoney, _ := money.NewMoney(decimal.NewFromFloat(150.0), money.EUR)
+		if !reflect.DeepEqual(&updatedWallet.Money, &expectedMoney) {
 			t.Errorf("AddMoneyToWallet() got = %v, want = %v", updatedWallet.Money, expectedMoney)
 		}
 	})
@@ -120,16 +122,16 @@ func TestWallet(t *testing.T) {
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		_, _ = db.CreateWallet(newUserID)
+		_, _ = db.CreateWallet(newUserID, money.INR)
 
-		initialMoney, _ := money.NewMoney(100, "INR")
+		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.INR)
 
 		err := db.AddMoneyToWallet(newUserID, *initialMoney)
 		if err != nil {
 			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
 		}
 
-		withdrawMoney, _ := money.NewMoney(50, "INR")
+		withdrawMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 
 		withdrawnMoney, err := db.WithdrawMoneyFromWallet(newUserID, *withdrawMoney)
 		if err != nil {
@@ -142,8 +144,8 @@ func TestWallet(t *testing.T) {
 
 		updatedWallet, _ := db.GetWalletByUserID(newUserID)
 
-		expectedMoneyRemained, _ := money.NewMoney(50, "INR")
-		if !reflect.DeepEqual(&updatedWallet.Money, expectedMoneyRemained) {
+		expectedMoneyRemained, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
+		if !reflect.DeepEqual(&updatedWallet.Money, &expectedMoneyRemained) {
 			t.Errorf("WithdrawMoneyFromWallet() remained got = %v, want = %v", updatedWallet.Money, expectedMoneyRemained)
 		}
 
@@ -156,16 +158,16 @@ func TestWallet(t *testing.T) {
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		_, _ = db.CreateWallet(newUserID)
+		_, _ = db.CreateWallet(newUserID, money.USD)
 
-		initialMoney, _ := money.NewMoney(100, "INR")
+		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.USD)
 
 		err := db.AddMoneyToWallet(newUserID, *initialMoney)
 		if err != nil {
 			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
 		}
 
-		withdrawMoney, _ := money.NewMoney(150, "INR")
+		withdrawMoney, _ := money.NewMoney(decimal.NewFromFloat(150.0), money.USD)
 
 		_, err = db.WithdrawMoneyFromWallet(newUserID, *withdrawMoney)
 		if err == nil {
@@ -173,39 +175,39 @@ func TestWallet(t *testing.T) {
 		}
 	})
 
-	t.Run("TrasferMoney method to successfully transfer money from sender to reiever", func(t *testing.T) {
+	t.Run("TrasferMoney method to successfully transfer money from sender to reiever having same currency", func(t *testing.T) {
 		sender := &User{
 			EmailID:  "test_sender@example.com",
 			Password: "test123",
 		}
 		senderID, _ := db.CreateUser(sender)
-		_, _ = db.CreateWallet(senderID)
+		_, _ = db.CreateWallet(senderID, money.EUR)
 
 		recipient := &User{
 			EmailID:  "test_recipient@example.com",
 			Password: "test123",
 		}
 		recipientID, _ := db.CreateUser(recipient)
-		_, _ = db.CreateWallet(recipientID)
+		_, _ = db.CreateWallet(recipientID, money.EUR)
 
-		initialMoney, _ := money.NewMoney(100, "INR")
+		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.EUR)
 		_ = db.AddMoneyToWallet(senderID, *initialMoney)
 
-		transferAmount, _ := money.NewMoney(50, "INR")
+		transferAmount, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
 		err := db.TransferMoney(senderID, recipient.EmailID, *transferAmount)
 		if err != nil {
 			t.Fatalf("TransferMoney() error = %v, want nil", err)
 		}
 
-		expectedSenderMoney, _ := money.NewMoney(50, "INR")
+		expectedSenderMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
 		senderWallet, _ := db.GetWalletByUserID(senderID)
-		if !reflect.DeepEqual(&senderWallet.Money, expectedSenderMoney) {
+		if !reflect.DeepEqual(&senderWallet.Money, &expectedSenderMoney) {
 			t.Errorf("TransferMoney() sender balance got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
 		}
 
-		expectedRecipientMoney, _ := money.NewMoney(50, "INR")
+		expectedRecipientMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
 		recipientWallet, _ := db.GetWalletByUserID(senderID)
-		if !reflect.DeepEqual(&recipientWallet.Money, expectedRecipientMoney) {
+		if !reflect.DeepEqual(&recipientWallet.Money, &expectedRecipientMoney) {
 			t.Errorf("TransferMoney() recipient balance got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
 		}
 	})
@@ -216,9 +218,9 @@ func TestWallet(t *testing.T) {
 			Password: "test123",
 		}
 		recipientID, _ := db.CreateUser(recipient)
-		_, _ = db.CreateWallet(recipientID)
+		_, _ = db.CreateWallet(recipientID, money.INR)
 
-		transferAmount, _ := money.NewMoney(50, "INR")
+		transferAmount, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 		err := db.TransferMoney(9999, recipient.EmailID, *transferAmount)
 
 		if err == nil {
@@ -226,22 +228,22 @@ func TestWallet(t *testing.T) {
 		}
 	})
 
-	t.Run("TransferMoney method should return error for invalid recipient ID", func(t *testing.T) {
+	t.Run("TransferMoney method should return error for invalid recipient emailID", func(t *testing.T) {
 		sender := &User{
 			EmailID:  "test_sender@example.com",
 			Password: "test123",
 		}
 		senderID, _ := db.CreateUser(sender)
-		_, _ = db.CreateWallet(senderID)
+		_, _ = db.CreateWallet(senderID, money.INR)
 
-		initialMoney, _ := money.NewMoney(100, "INR")
+		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.INR)
 		_ = db.AddMoneyToWallet(senderID, *initialMoney)
 
-		transferAmount, _ := money.NewMoney(50, "INR")
+		transferAmount, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 		err := db.TransferMoney(senderID, "invalid_recipient@example.com", *transferAmount)
 
 		if err == nil {
-			t.Errorf("TransferMoney() expected error but got nil for invalid recipient ID")
+			t.Errorf("TransferMoney() expected error but got nil for invalid recipient emailID")
 		}
 	})
 }

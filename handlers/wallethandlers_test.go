@@ -363,5 +363,4 @@ func TestWalletHandlers(t *testing.T) {
 		err = json.NewDecoder(recorder.Body).Decode(&response)
 		assert.Error(t, err, "invalid amount")
 	})
-
 }

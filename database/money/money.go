@@ -20,7 +20,7 @@ var ConversionFactors = map[Currency]decimal.Decimal{
 	INR: decimal.NewFromFloat(1.0),
 }
 
-var zeroAmountValue = decimal.NewFromFloat(0.0)
+var ZeroAmountValue = decimal.NewFromFloat(0.0)
 
 type Money struct {
 	Amount   decimal.Decimal
@@ -28,7 +28,7 @@ type Money struct {
 }
 
 func NewMoney(amount decimal.Decimal, currency Currency) (*Money, error) {
-	if amount.LessThan(zeroAmountValue) || amount.Equal(zeroAmountValue) {
+	if amount.LessThan(ZeroAmountValue) {
 		return nil, fmt.Errorf("amount cannot be negative")
 	}
 	_, ok := ConversionFactors[currency]

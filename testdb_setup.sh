@@ -1,4 +1,6 @@
 #!/bin/bash
+#-- Create the custom domain for currency
+# CREATE DOMAIN currency_enum AS TEXT CHECK (VALUE IN ('USD', 'EUR', 'INR'));
 
 DB_NAME="testdb"
 
@@ -8,6 +10,7 @@ DROP TABLE IF EXISTS users;
 EOF
 
 psql -U postgres -d ${DB_NAME} << EOF
+
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
   email TEXT UNIQUE NOT NULL,
@@ -17,11 +20,12 @@ CREATE TABLE users (
 CREATE TABLE wallet (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    amount BIGINT NOT NULL,
+    amount NUMERIC(15, 2) NOT NULL,
     currency TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
 );
+
 EOF
 
 echo "Tables created successfully."
