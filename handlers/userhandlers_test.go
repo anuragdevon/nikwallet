@@ -54,35 +54,26 @@ func TestUserHandlers(t *testing.T) {
 	})
 
 	t.Run("SignupHandler to return 500 InternalServerError for duplicate user entry", func(t *testing.T) {
-		newUser := map[string]interface{}{
-			"email_id": "nikwallet123hello@example.com",
-			"password": "123password",
+		newUser := &database.User{
+			EmailID:  "nikwallethello@example.com",
+			Password: "password",
 		}
 
-		reqBody, err := json.Marshal(newUser)
+		_, err = userService.CreateUser(newUser)
+		assert.NoError(t, err)
+
+		duplicateUser := map[string]interface{}{
+			"email_id": "nikwallethello@example.com",
+			"password": "password4561",
+		}
+
+		reqBody, err := json.Marshal(duplicateUser)
 		assert.NoError(t, err)
 
 		req, err := http.NewRequest("POST", "/signup", bytes.NewReader(reqBody))
 		assert.NoError(t, err)
 
 		recorder := httptest.NewRecorder()
-
-		http.HandlerFunc(userHandlers.SignupHandler).ServeHTTP(recorder, req)
-
-		assert.Equal(t, http.StatusCreated, recorder.Code)
-
-		duplicateUser := map[string]interface{}{
-			"email_id": "nikwallet123@example.com",
-			"password": "password4561",
-		}
-
-		reqBody, err = json.Marshal(duplicateUser)
-		assert.NoError(t, err)
-
-		req, err = http.NewRequest("POST", "/signup", bytes.NewReader(reqBody))
-		assert.NoError(t, err)
-
-		recorder = httptest.NewRecorder()
 
 		http.HandlerFunc(userHandlers.SignupHandler).ServeHTTP(recorder, req)
 
@@ -116,7 +107,7 @@ func TestUserHandlers(t *testing.T) {
 
 	t.Run("SigninHandler to return status 401 Unauthorized for invalid user credentials", func(t *testing.T) {
 		invalidSigninRequest := map[string]interface{}{
-			"email_id": "testhello321@example.com",
+			"email_id": "emaildoesnotexits@example.com",
 			"password": "wrongpassword",
 		}
 
