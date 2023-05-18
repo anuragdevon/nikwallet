@@ -36,7 +36,7 @@ func TestUserHandlers(t *testing.T) {
 		reqBody, err := json.Marshal(signupRequest)
 		assert.NoError(t, err)
 
-		req, err := http.NewRequest("POST", "/signup", bytes.NewReader(reqBody))
+		req, err := http.NewRequest("POST", "user/signup", bytes.NewReader(reqBody))
 		assert.NoError(t, err)
 
 		recorder := httptest.NewRecorder()
@@ -70,7 +70,7 @@ func TestUserHandlers(t *testing.T) {
 		reqBody, err := json.Marshal(duplicateUser)
 		assert.NoError(t, err)
 
-		req, err := http.NewRequest("POST", "/signup", bytes.NewReader(reqBody))
+		req, err := http.NewRequest("POST", "user/signup", bytes.NewReader(reqBody))
 		assert.NoError(t, err)
 
 		recorder := httptest.NewRecorder()
@@ -89,7 +89,7 @@ func TestUserHandlers(t *testing.T) {
 		reqBody, err := json.Marshal(signinRequest)
 		assert.NoError(t, err)
 
-		req, err := http.NewRequest("POST", "/signin", bytes.NewReader(reqBody))
+		req, err := http.NewRequest("POST", "user/signin", bytes.NewReader(reqBody))
 		assert.NoError(t, err)
 
 		recorder := httptest.NewRecorder()
@@ -114,7 +114,7 @@ func TestUserHandlers(t *testing.T) {
 		reqBody, err := json.Marshal(invalidSigninRequest)
 		assert.NoError(t, err)
 
-		req, err := http.NewRequest("POST", "/signin", bytes.NewReader(reqBody))
+		req, err := http.NewRequest("POST", "user/signin", bytes.NewReader(reqBody))
 		assert.NoError(t, err)
 
 		recorder := httptest.NewRecorder()
