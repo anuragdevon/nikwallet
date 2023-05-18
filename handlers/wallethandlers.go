@@ -5,9 +5,6 @@ import (
 	"net/http"
 	"nikwallet/database/money"
 	"nikwallet/services"
-	"strconv"
-
-	"github.com/gorilla/mux"
 )
 
 type WalletHandlers struct {
@@ -50,18 +47,11 @@ func (wh *WalletHandlers) CreateWalletHandler(w http.ResponseWriter, r *http.Req
 }
 
 func (wh *WalletHandlers) AddMoneyToWalletHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
 	IDToken := r.Header.Get("id_token")
-	_, _, err := wh.authService.VerifyToken(IDToken)
+	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(Response{Error: err.Error()})
-		return
-	}
-	walletID, err := strconv.Atoi(vars["wallet_id"])
-	if err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Response{Error: "invalid wallet ID"})
 		return
 	}
 
@@ -72,7 +62,7 @@ func (wh *WalletHandlers) AddMoneyToWalletHandler(w http.ResponseWriter, r *http
 		return
 	}
 
-	if err := wh.walletService.AddMoneyToWallet(walletID, m); err != nil {
+	if err := wh.walletService.AddMoneyToWallet(userID, m); err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(Response{Error: err.Error()})
 		return
@@ -83,18 +73,11 @@ func (wh *WalletHandlers) AddMoneyToWalletHandler(w http.ResponseWriter, r *http
 }
 
 func (wh *WalletHandlers) WithdrawMoneyFromWalletHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
 	IDToken := r.Header.Get("id_token")
-	_, _, err := wh.authService.VerifyToken(IDToken)
+	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(Response{Error: err.Error()})
-		return
-	}
-
-	walletID, err := strconv.Atoi(vars["wallet_id"])
-	if err != nil {
-		http.Error(w, "invalid wallet ID", http.StatusBadRequest)
 		return
 	}
 
@@ -103,11 +86,13 @@ func (wh *WalletHandlers) WithdrawMoneyFromWalletHandler(w http.ResponseWriter, 
 		http.Error(w, "invalid amount", http.StatusBadRequest)
 		return
 	}
+	var withdrawnMoney money.Money
 
-	if _, err = wh.walletService.WithdrawMoneyFromWallet(walletID, m); err != nil {
+	if withdrawnMoney, err = wh.walletService.WithdrawMoneyFromWallet(userID, m); err != nil {
 		http.Error(w, "insufficient funds", http.StatusBadRequest)
 		return
 	}
 
 	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(&withdrawnMoney)
 }
