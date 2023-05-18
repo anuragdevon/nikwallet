@@ -1,40 +1,117 @@
 package money
 
-import "fmt"
+import (
+	"fmt"
 
-type Money struct {
-	Amount   int64
-	Currency string
+	"github.com/shopspring/decimal"
+)
+
+type Currency string
+
+const (
+	USD Currency = "USD"
+	EUR Currency = "EUR"
+	INR Currency = "INR"
+)
+
+var ConversionFactors = map[Currency]decimal.Decimal{
+	USD: decimal.NewFromFloat(0.012),
+	EUR: decimal.NewFromFloat(0.011),
+	INR: decimal.NewFromFloat(1.0),
 }
 
-func NewMoney(amount int64, currency string) (*Money, error) {
-	if amount < 0 {
+var zeroAmountValue = decimal.NewFromFloat(0.0)
+
+type Money struct {
+	Amount   decimal.Decimal
+	Currency Currency
+}
+
+func NewMoney(amount decimal.Decimal, currency Currency) (*Money, error) {
+	if amount.LessThan(zeroAmountValue) || amount.Equal(zeroAmountValue) {
 		return nil, fmt.Errorf("amount cannot be negative")
 	}
-	if currency == "" {
-		return nil, fmt.Errorf("currency cannot be empty")
+	_, ok := ConversionFactors[currency]
+	if !ok {
+		return nil, fmt.Errorf("unsupported currency: %s", currency)
 	}
+
 	return &Money{
 		Amount:   amount,
 		Currency: currency,
 	}, nil
 }
 
-func (m *Money) Add(money *Money) (*Money, error) {
-	if m.Currency != money.Currency {
-		return &Money{}, fmt.Errorf("cannot add money with different currency")
+func (m *Money) ToBaseCurrency() (*Money, error) {
+	baseFactor, err := ConversionFactors[m.Currency]
+	if !err {
+		return nil, fmt.Errorf("unsupported currency conversion")
 	}
-	AddedMoney, _ := NewMoney(m.Amount+money.Amount, "INR")
-	return AddedMoney, nil
+
+	convertedAmount := m.Amount.Mul(baseFactor)
+
+	return &Money{
+		Amount:   convertedAmount,
+		Currency: INR,
+	}, nil
+}
+
+func (m *Money) Add(money *Money) (*Money, error) {
+	baseCurrencyMoney, err := m.ToBaseCurrency()
+	if err != nil {
+		return nil, err
+	}
+
+	otherBaseCurrencyMoney, err := money.ToBaseCurrency()
+	if err != nil {
+		return nil, err
+	}
+
+	addedAmount := baseCurrencyMoney.Amount.Add(otherBaseCurrencyMoney.Amount)
+
+	conversionFactor, ok := ConversionFactors[m.Currency]
+	if !ok {
+		return nil, fmt.Errorf("unsupported currency conversion")
+	}
+
+	convertedAmount := addedAmount.Div(conversionFactor).Round(2)
+
+	return &Money{
+		Amount:   convertedAmount,
+		Currency: m.Currency,
+	}, nil
 }
 
 func (m *Money) Subtract(money *Money) (*Money, error) {
 	if m.Currency != money.Currency {
-		return &Money{}, fmt.Errorf("cannot subtract money with different currency")
+		return nil, fmt.Errorf("cannot subtract money with different currency")
 	}
-	if m.Amount < money.Amount {
-		return &Money{}, fmt.Errorf("not enough money to deduct")
+
+	baseCurrencyMoney, err := m.ToBaseCurrency()
+	if err != nil {
+		return nil, err
 	}
-	SubtractedMoney, _ := NewMoney(m.Amount-money.Amount, "INR")
-	return SubtractedMoney, nil
+
+	otherBaseCurrencyMoney, err := money.ToBaseCurrency()
+	if err != nil {
+		return nil, err
+	}
+
+	if baseCurrencyMoney.Amount.LessThan(otherBaseCurrencyMoney.Amount) {
+		return nil, fmt.Errorf("not enough money to deduct")
+	}
+
+	subtractedAmount := baseCurrencyMoney.Amount.Sub(otherBaseCurrencyMoney.Amount)
+
+	conversionFactor, ok := ConversionFactors[m.Currency]
+	if !ok {
+		return nil, fmt.Errorf("unsupported currency conversion")
+	}
+
+	convertedAmount := subtractedAmount.Div(conversionFactor).Round(2)
+
+	return &Money{
+		Amount:   convertedAmount,
+		Currency: m.Currency,
+	}, nil
 }

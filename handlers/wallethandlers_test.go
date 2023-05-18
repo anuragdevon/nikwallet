@@ -78,7 +78,7 @@ func TestWalletHandlers(t *testing.T) {
 		reqBody, err := json.Marshal(addMoneyRequest)
 		assert.NoError(t, err)
 
-		url := "/wallet/add"
+		url := "/wallet"
 		req, err := http.NewRequest("PUT", url, bytes.NewReader(reqBody))
 		req.Header.Set("id_token", IDToken)
 		assert.NoError(t, err)
