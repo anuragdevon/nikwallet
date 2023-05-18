@@ -30,7 +30,7 @@ func TestWalletHandlers(t *testing.T) {
 
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
-	t.Run("TestCreateWalletHandlerToSuccessfullyCreateWallet", func(t *testing.T) {
+	t.Run("CreateWalletHandler to return 201 StatusCreated for successfully create wallet", func(t *testing.T) {
 		newUser := &database.User{
 			EmailID:  "testw5111@example.com",
 			Password: "password",
@@ -58,7 +58,7 @@ func TestWalletHandlers(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("TestAddMoneyToWalletHandlerToSuccessfullyAddMoney", func(t *testing.T) {
+	t.Run("AddMoneyToWalletHandler to return 200 StatusOk for successfull add money to user's wallet", func(t *testing.T) {
 		newUser := &database.User{
 			EmailID:  "testw5112@example.com",
 			Password: "password",
@@ -95,7 +95,7 @@ func TestWalletHandlers(t *testing.T) {
 		assert.Equal(t, "money added to wallet successfully", response.Message)
 	})
 
-	t.Run("TestWithdrawMoneyFromWalletHandlerToSuccessfullyWithdrawMoney", func(t *testing.T) {
+	t.Run("WithdrawMoneyFromWalletHandler to return 200 StatusOk for successfull withdraw money from user's wallet", func(t *testing.T) {
 		newUser := &database.User{
 			EmailID:  "testw5113@example.com",
 			Password: "password",
@@ -130,16 +130,55 @@ func TestWalletHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, recorder.Code)
 
-		// var response handlers.Response
-		// fmt.Println(recorder.Body)
-		// fmt.Println(response.Message)
-		// err = json.NewDecoder(recorder.Body).Decode(&response)
-		// assert.NoError(t, err)
-		// assert.Equal(t, "money withdrawn from wallet successfully", response.Message)
-
 		var wallet *database.Wallet
 		err = json.NewDecoder(recorder.Body).Decode(&wallet)
 		assert.NoError(t, err)
 	})
 
+	t.Run("WithdrawMoneyFromWalletHandler to return status 400 bad request for InsufficientFunds", func(t *testing.T) {
+		newUser := &database.User{
+			EmailID:  "testw5114@example.com",
+			Password: "password",
+		}
+
+		userID, err := userService.CreateUser(newUser)
+		assert.NoError(t, err)
+
+		_, err = walletService.CreateWallet(userID)
+		assert.NoError(t, err)
+
+		IDToken, _ := authService.AuthenticateUser(newUser.EmailID, newUser.Password)
+		assert.NotNil(t, IDToken)
+
+		addMoneyRequest := money.Money{Amount: 40, Currency: "INR"}
+		err = walletService.AddMoneyToWallet(userID, addMoneyRequest)
+		assert.NoError(t, err)
+
+		withdrawMoneyRequest := money.Money{Amount: 50, Currency: "INR"}
+		reqBody, err := json.Marshal(withdrawMoneyRequest)
+		assert.NoError(t, err)
+
+		url := "/wallet/withdraw"
+		req, err := http.NewRequest("PUT", url, bytes.NewReader(reqBody))
+		req.Header.Set("id_token", IDToken)
+		assert.NoError(t, err)
+
+		recorder := httptest.NewRecorder()
+
+		http.HandlerFunc(walletHandlers.WithdrawMoneyFromWalletHandler).ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+		var response handlers.Response
+		err = json.NewDecoder(recorder.Body).Decode(&response)
+		assert.Error(t, err, "insufficient funds")
+	})
+
 }
+
+// var response handlers.Response
+// fmt.Println(recorder.Body)
+// fmt.Println(response.Message)
+// err = json.NewDecoder(recorder.Body).Decode(&response)
+// assert.NoError(t, err)
+// assert.Equal(t, "money withdrawn from wallet successfully", response.Message)
