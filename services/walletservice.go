@@ -34,3 +34,8 @@ func (ws *WalletService) WithdrawMoneyFromWallet(walletID int, moneyToWithdraw m
 	db := database.PostgreSQL{DB: ws.db}
 	return db.WithdrawMoneyFromWallet(walletID, moneyToWithdraw)
 }
+
+func (ws *WalletService) TransferMoney(walletID int, recipientEmail string, moneyToTransfer money.Money) error {
+	db := database.PostgreSQL{DB: ws.db}
+	return db.TransferMoney(walletID, recipientEmail, moneyToTransfer)
+}

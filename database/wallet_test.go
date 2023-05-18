@@ -149,6 +149,43 @@ func TestWallet(t *testing.T) {
 
 	})
 
+	t.Run("TestPostgreSQL_TransferMoney", func(t *testing.T) {
+		sender := &User{
+			EmailID:  "test_sender@example.com",
+			Password: "test123",
+		}
+		senderID, _ := db.CreateUser(sender)
+		_, _ = db.CreateWallet(senderID)
+
+		recipient := &User{
+			EmailID:  "test_recipient@example.com",
+			Password: "test123",
+		}
+		recipientID, _ := db.CreateUser(recipient)
+		_, _ = db.CreateWallet(recipientID)
+
+		initialMoney, _ := money.NewMoney(100, "INR")
+		_ = db.AddMoneyToWallet(senderID, *initialMoney)
+
+		transferAmount, _ := money.NewMoney(50, "INR")
+		err := db.TransferMoney(senderID, recipient.EmailID, *transferAmount)
+		if err != nil {
+			t.Fatalf("TransferMoney() error = %v, want nil", err)
+		}
+
+		expectedSenderMoney, _ := money.NewMoney(50, "INR")
+		senderWallet, _ := db.GetWalletByUserID(senderID)
+		if !reflect.DeepEqual(&senderWallet.Money, expectedSenderMoney) {
+			t.Errorf("TransferMoney() sender balance got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
+		}
+
+		expectedRecipientMoney, _ := money.NewMoney(50, "INR")
+		recipientWallet, _ := db.GetWalletByUserID(senderID)
+		if !reflect.DeepEqual(&recipientWallet.Money, expectedRecipientMoney) {
+			t.Errorf("TransferMoney() recipient balance got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
+		}
+	})
+
 	t.Run("WithdrawMoneyFromWallet to return error for not enough money in wallet", func(t *testing.T) {
 		newUser := &User{
 			EmailID:  "testw16s@example.com",

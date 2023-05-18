@@ -92,3 +92,28 @@ func (db *PostgreSQL) WithdrawMoneyFromWallet(userID int, moneyToWithdraw money.
 
 	return moneyToWithdraw, nil
 }
+
+func (db *PostgreSQL) TransferMoney(senderWalletID int, recipientEmail string, moneyToTransfer money.Money) error {
+	recipient, err := db.GetUserByEmail(recipientEmail)
+	if err != nil {
+		return err
+	}
+
+	recipientWallet, err := db.GetWalletByUserID(recipient.ID)
+	if err != nil {
+		return err
+	}
+
+	amountDeducted, err := db.WithdrawMoneyFromWallet(senderWalletID, moneyToTransfer)
+	if err != nil {
+		return err
+	}
+
+	err = db.AddMoneyToWallet(recipientWallet.UserID, amountDeducted)
+	if err != nil {
+		_ = db.AddMoneyToWallet(senderWalletID, amountDeducted)
+		return err
+	}
+
+	return nil
+}
