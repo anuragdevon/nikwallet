@@ -149,7 +149,31 @@ func TestWallet(t *testing.T) {
 
 	})
 
-	t.Run("TestPostgreSQL_TransferMoney", func(t *testing.T) {
+	t.Run("WithdrawMoneyFromWallet to return error for not enough money in wallet", func(t *testing.T) {
+		newUser := &User{
+			EmailID:  "testw16s@example.com",
+			Password: "test123",
+		}
+		newUserID, _ := db.CreateUser(newUser)
+
+		_, _ = db.CreateWallet(newUserID)
+
+		initialMoney, _ := money.NewMoney(100, "INR")
+
+		err := db.AddMoneyToWallet(newUserID, *initialMoney)
+		if err != nil {
+			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
+		}
+
+		withdrawMoney, _ := money.NewMoney(150, "INR")
+
+		_, err = db.WithdrawMoneyFromWallet(newUserID, *withdrawMoney)
+		if err == nil {
+			t.Error("WithdrawMoneyFromWallet() error = nil, want an error")
+		}
+	})
+
+	t.Run("TrasferMoney method to successfully transfer money from sender to reiever", func(t *testing.T) {
 		sender := &User{
 			EmailID:  "test_sender@example.com",
 			Password: "test123",
@@ -186,27 +210,38 @@ func TestWallet(t *testing.T) {
 		}
 	})
 
-	t.Run("WithdrawMoneyFromWallet to return error for not enough money in wallet", func(t *testing.T) {
-		newUser := &User{
-			EmailID:  "testw16s@example.com",
+	t.Run("TransferMoney method should return error for invalid sender ID", func(t *testing.T) {
+		recipient := &User{
+			EmailID:  "test_recipient@example.com",
 			Password: "test123",
 		}
-		newUserID, _ := db.CreateUser(newUser)
+		recipientID, _ := db.CreateUser(recipient)
+		_, _ = db.CreateWallet(recipientID)
 
-		_, _ = db.CreateWallet(newUserID)
+		transferAmount, _ := money.NewMoney(50, "INR")
+		err := db.TransferMoney(9999, recipient.EmailID, *transferAmount)
+
+		if err == nil {
+			t.Errorf("TransferMoney() expected error but got nil for invalid sender ID")
+		}
+	})
+
+	t.Run("TransferMoney method should return error for invalid recipient ID", func(t *testing.T) {
+		sender := &User{
+			EmailID:  "test_sender@example.com",
+			Password: "test123",
+		}
+		senderID, _ := db.CreateUser(sender)
+		_, _ = db.CreateWallet(senderID)
 
 		initialMoney, _ := money.NewMoney(100, "INR")
+		_ = db.AddMoneyToWallet(senderID, *initialMoney)
 
-		err := db.AddMoneyToWallet(newUserID, *initialMoney)
-		if err != nil {
-			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
-		}
+		transferAmount, _ := money.NewMoney(50, "INR")
+		err := db.TransferMoney(senderID, "invalid_recipient@example.com", *transferAmount)
 
-		withdrawMoney, _ := money.NewMoney(150, "INR")
-
-		_, err = db.WithdrawMoneyFromWallet(newUserID, *withdrawMoney)
 		if err == nil {
-			t.Error("WithdrawMoneyFromWallet() error = nil, want an error")
+			t.Errorf("TransferMoney() expected error but got nil for invalid recipient ID")
 		}
 	})
 }

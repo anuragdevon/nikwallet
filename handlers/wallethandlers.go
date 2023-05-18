@@ -95,3 +95,31 @@ func (wh *WalletHandlers) WithdrawMoneyFromWalletHandler(w http.ResponseWriter, 
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(&withdrawnMoney)
 }
+
+func (wh *WalletHandlers) TransferMoneyHandler(w http.ResponseWriter, r *http.Request) {
+	IDToken := r.Header.Get("id_token")
+	_, userID, err := wh.authService.VerifyToken(IDToken)
+	if err != nil {
+		w.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(w).Encode(Response{Error: err.Error()})
+		return
+	}
+
+	var payload struct {
+		Amount         money.Money `json:"amount"`
+		RecipientEmail string      `json:"recipient_email"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid payload", http.StatusBadRequest)
+		return
+	}
+
+	if err := wh.walletService.TransferMoney(userID, payload.RecipientEmail, payload.Amount); err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(Response{Message: "money transferred successfully"})
+}

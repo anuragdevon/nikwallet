@@ -94,6 +94,7 @@ func (db *PostgreSQL) WithdrawMoneyFromWallet(userID int, moneyToWithdraw money.
 }
 
 func (db *PostgreSQL) TransferMoney(senderWalletID int, recipientEmail string, moneyToTransfer money.Money) error {
+
 	recipient, err := db.GetUserByEmail(recipientEmail)
 	if err != nil {
 		return err
