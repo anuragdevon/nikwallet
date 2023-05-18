@@ -15,14 +15,14 @@ func NewWalletService(db *sql.DB) *WalletService {
 	return &WalletService{db}
 }
 
-func (ws *WalletService) CreateWallet(userID int) (int, error) {
+func (ws *WalletService) CreateWallet(userID int) (*database.Wallet, error) {
 	db := database.PostgreSQL{DB: ws.db}
 	return db.CreateWallet(userID)
 }
 
-func (ws *WalletService) GetWalletByID(walletID int) (*database.Wallet, error) {
+func (ws *WalletService) GetWalletByUserID(userID int) (*database.Wallet, error) {
 	db := database.PostgreSQL{DB: ws.db}
-	return db.GetWalletByID(walletID)
+	return db.GetWalletByUserID(userID)
 }
 
 func (ws *WalletService) AddMoneyToWallet(walletID int, moneyToAdd money.Money) error {
