@@ -57,8 +57,7 @@ func (wh *WalletHandlers) AddMoneyToWalletHandler(w http.ResponseWriter, r *http
 
 	var m money.Money
 	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
-		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(Response{Error: "invalid amount"})
+		http.Error(w, "invalid amount", http.StatusBadRequest)
 		return
 	}
 

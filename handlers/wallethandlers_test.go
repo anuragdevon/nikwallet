@@ -95,6 +95,45 @@ func TestWalletHandlers(t *testing.T) {
 		assert.Equal(t, "money added to wallet successfully", response.Message)
 	})
 
+	t.Run("AddMoneyToWalletHandler to return status 400 bad request for InvalidAmount", func(t *testing.T) {
+		newUser := &database.User{
+			EmailID:  "testw599@example.com",
+			Password: "password",
+		}
+
+		userID, err := userService.CreateUser(newUser)
+		assert.NoError(t, err)
+
+		_, err = walletService.CreateWallet(userID)
+		assert.NoError(t, err)
+
+		IDToken, _ := authService.AuthenticateUser(newUser.EmailID, newUser.Password)
+		assert.NotNil(t, IDToken)
+
+		invalidWithdrawMoneyRequest := map[string]interface{}{
+			"amount":   "notanumber",
+			"currency": "INR",
+		}
+
+		reqBody, err := json.Marshal(invalidWithdrawMoneyRequest)
+		assert.NoError(t, err)
+
+		url := "/wallet/add"
+		req, err := http.NewRequest("PUT", url, bytes.NewReader(reqBody))
+		req.Header.Set("id_token", IDToken)
+		assert.NoError(t, err)
+
+		recorder := httptest.NewRecorder()
+
+		http.HandlerFunc(walletHandlers.AddMoneyToWalletHandler).ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+		var response handlers.Response
+		err = json.NewDecoder(recorder.Body).Decode(&response)
+		assert.Error(t, err, "invalid amount")
+	})
+
 	t.Run("WithdrawMoneyFromWalletHandler to return 200 StatusOk for successfull withdraw money from user's wallet", func(t *testing.T) {
 		newUser := &database.User{
 			EmailID:  "testw5113@example.com",
