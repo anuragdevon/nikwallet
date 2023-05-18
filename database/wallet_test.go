@@ -21,28 +21,13 @@ func TestWallet(t *testing.T) {
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		walletID, err := db.CreateWallet(newUserID)
+		wallet, err := db.CreateWallet(newUserID)
 		if err != nil {
 			t.Fatalf("CreateWallet() error = %v, want nil", err)
 		}
 
-		if walletID == 0 {
-			t.Errorf("CreateWallet() did not set wallet ID")
-		}
-	})
-
-	t.Run("GetWalletByID method to return valid Wallet for valid walletID", func(t *testing.T) {
-		newUser := &User{
-			EmailID:  "testw11@example.com",
-			Password: "test123",
-		}
-		newUserID, _ := db.CreateUser(newUser)
-
-		walletID, _ := db.CreateWallet(newUserID)
-
-		_, err := db.GetWalletByID(walletID)
-		if err != nil {
-			t.Fatalf("Failed to get wallet: %v", err)
+		if wallet == nil {
+			t.Errorf("CreateWallet() did not set new wallet")
 		}
 	})
 
@@ -52,22 +37,22 @@ func TestWallet(t *testing.T) {
 			Password: "test123",
 		}
 		newUserID, _ := db.CreateUser(newUser)
-		walletID, _ := db.CreateWallet(newUserID)
+		newWallet, _ := db.CreateWallet(newUserID)
 
 		wallet, err := db.GetWalletByUserID(newUserID)
 		if err != nil {
 			t.Fatalf("Failed to get wallet: %v", err)
 		}
 
-		if wallet.ID != walletID {
-			t.Errorf("Expected wallet ID %d, but got %d", walletID, wallet.ID)
+		if !reflect.DeepEqual(wallet, newWallet) {
+			t.Errorf("Expected wallet got = %v, want = %v", wallet, newWallet)
 		}
 		if wallet.UserID != newUserID {
 			t.Errorf("Expected user ID %d, but got %d", newUserID, wallet.UserID)
 		}
 	})
 
-	t.Run("TestPostgreSQL_GetWalletByUserID_NonExistentUser", func(t *testing.T) {
+	t.Run("GetWalletByUserID method to return error for NonExistentUser", func(t *testing.T) {
 		_, err = db.GetWalletByUserID(9999)
 		if err == nil {
 			t.Fatal("Expected error, but got nil")
@@ -85,22 +70,18 @@ func TestWallet(t *testing.T) {
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		walletID, _ := db.CreateWallet(newUserID)
+		_, _ = db.CreateWallet(newUserID)
 
 		initialMoney, _ := money.NewMoney(100, "INR")
 
-		err := db.AddMoneyToWallet(walletID, *initialMoney)
+		err := db.AddMoneyToWallet(newUserID, *initialMoney)
 		if err != nil {
 			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
 		}
+		updatedWallet, _ := db.GetWalletByUserID(newUserID)
 
-		wallet, err := db.GetWalletByID(walletID)
-		if err != nil {
-			t.Fatalf("GetWalletByID() error = %v, want nil", err)
-		}
-
-		if !reflect.DeepEqual(&wallet.Money, initialMoney) {
-			t.Errorf("AddMoneyToWallet() got = %v, want = %v", wallet.Money, initialMoney)
+		if !reflect.DeepEqual(&updatedWallet.Money, initialMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", updatedWallet.Money, initialMoney)
 		}
 	})
 
@@ -111,28 +92,24 @@ func TestWallet(t *testing.T) {
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		walletID, _ := db.CreateWallet(newUserID)
+		_, _ = db.CreateWallet(newUserID)
 
 		initialMoney, _ := money.NewMoney(100, "INR")
-		err := db.AddMoneyToWallet(walletID, *initialMoney)
+		err := db.AddMoneyToWallet(newUserID, *initialMoney)
 		if err != nil {
 			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
 		}
 
 		additionalMoney, _ := money.NewMoney(50, "INR")
-		err = db.AddMoneyToWallet(walletID, *additionalMoney)
+		err = db.AddMoneyToWallet(newUserID, *additionalMoney)
 		if err != nil {
 			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
 		}
-
-		wallet, err := db.GetWalletByID(walletID)
-		if err != nil {
-			t.Fatalf("GetWalletByID() error = %v, want nil", err)
-		}
+		updatedWallet, _ := db.GetWalletByUserID(newUserID)
 
 		expectedMoney, _ := money.NewMoney(150, "INR")
-		if !reflect.DeepEqual(&wallet.Money, expectedMoney) {
-			t.Errorf("AddMoneyToWallet() got = %v, want = %v", wallet.Money, expectedMoney)
+		if !reflect.DeepEqual(&updatedWallet.Money, expectedMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", updatedWallet.Money, expectedMoney)
 		}
 	})
 
@@ -143,18 +120,18 @@ func TestWallet(t *testing.T) {
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		walletID, _ := db.CreateWallet(newUserID)
+		_, _ = db.CreateWallet(newUserID)
 
 		initialMoney, _ := money.NewMoney(100, "INR")
 
-		err := db.AddMoneyToWallet(walletID, *initialMoney)
+		err := db.AddMoneyToWallet(newUserID, *initialMoney)
 		if err != nil {
 			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
 		}
 
 		withdrawMoney, _ := money.NewMoney(50, "INR")
 
-		withdrawnMoney, err := db.WithdrawMoneyFromWallet(walletID, *withdrawMoney)
+		withdrawnMoney, err := db.WithdrawMoneyFromWallet(newUserID, *withdrawMoney)
 		if err != nil {
 			t.Fatalf("WithdrawMoneyFromWallet() error = %v, want nil", err)
 		}
@@ -162,6 +139,14 @@ func TestWallet(t *testing.T) {
 		if !reflect.DeepEqual(withdrawnMoney, *withdrawMoney) {
 			t.Errorf("WithdrawMoneyFromWallet() got = %v, want = %v", withdrawnMoney, withdrawMoney)
 		}
+
+		updatedWallet, _ := db.GetWalletByUserID(newUserID)
+
+		expectedMoneyRemained, _ := money.NewMoney(50, "INR")
+		if !reflect.DeepEqual(&updatedWallet.Money, expectedMoneyRemained) {
+			t.Errorf("WithdrawMoneyFromWallet() remained got = %v, want = %v", updatedWallet.Money, expectedMoneyRemained)
+		}
+
 	})
 
 	t.Run("WithdrawMoneyFromWallet to return error for not enough money in wallet", func(t *testing.T) {
@@ -171,18 +156,18 @@ func TestWallet(t *testing.T) {
 		}
 		newUserID, _ := db.CreateUser(newUser)
 
-		walletID, _ := db.CreateWallet(newUserID)
+		_, _ = db.CreateWallet(newUserID)
 
 		initialMoney, _ := money.NewMoney(100, "INR")
 
-		err := db.AddMoneyToWallet(walletID, *initialMoney)
+		err := db.AddMoneyToWallet(newUserID, *initialMoney)
 		if err != nil {
 			t.Fatalf("AddMoneyToWallet() error = %v, want nil", err)
 		}
 
 		withdrawMoney, _ := money.NewMoney(150, "INR")
 
-		_, err = db.WithdrawMoneyFromWallet(walletID, *withdrawMoney)
+		_, err = db.WithdrawMoneyFromWallet(newUserID, *withdrawMoney)
 		if err == nil {
 			t.Error("WithdrawMoneyFromWallet() error = nil, want an error")
 		}

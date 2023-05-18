@@ -15,10 +15,10 @@ type Wallet struct {
 	UpdatedAt time.Time
 }
 
-func (db *PostgreSQL) CreateWallet(userID int) (int, error) {
+func (db *PostgreSQL) CreateWallet(userID int) (*Wallet, error) {
 	_, err := db.GetUserByID(userID)
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 	initialZeroMoney, _ := money.NewMoney(0, "INR")
 	wallet := &Wallet{
@@ -34,20 +34,9 @@ func (db *PostgreSQL) CreateWallet(userID int) (int, error) {
 	err = db.DB.QueryRow(query, wallet.UserID, wallet.Money.Amount, wallet.Money.Currency, wallet.CreatedAt, wallet.UpdatedAt).
 		Scan(&wallet.ID, &wallet.CreatedAt, &wallet.UpdatedAt)
 	if err != nil {
-		return 0, fmt.Errorf("failed to create wallet: %w", err)
+		return nil, fmt.Errorf("failed to create wallet: %w", err)
 	}
 
-	return wallet.ID, nil
-}
-
-func (db *PostgreSQL) GetWalletByID(walletID int) (*Wallet, error) {
-	wallet := &Wallet{}
-	query := `SELECT id, user_id, amount, currency, created_at, updated_at FROM wallet WHERE id = $1`
-	err := db.DB.QueryRow(query, walletID).
-		Scan(&wallet.ID, &wallet.UserID, &wallet.Money.Amount, &wallet.Money.Currency, &wallet.CreatedAt, &wallet.UpdatedAt)
-	if err != nil {
-		return nil, fmt.Errorf("wallet not found")
-	}
 	return wallet, nil
 }
 
@@ -64,8 +53,8 @@ func (db *PostgreSQL) GetWalletByUserID(userID int) (*Wallet, error) {
 	return wallet, nil
 }
 
-func (db *PostgreSQL) AddMoneyToWallet(walletID int, moneyToAdd money.Money) error {
-	wallet, err := db.GetWalletByID(walletID)
+func (db *PostgreSQL) AddMoneyToWallet(userID int, moneyToAdd money.Money) error {
+	wallet, err := db.GetWalletByUserID(userID)
 	if err != nil {
 		return err
 	}
@@ -76,7 +65,7 @@ func (db *PostgreSQL) AddMoneyToWallet(walletID int, moneyToAdd money.Money) err
 	}
 
 	query := `UPDATE wallet SET amount=$1, updated_at=$2 WHERE id=$3`
-	_, err = db.DB.Exec(query, newMoney.Amount, time.Now(), walletID)
+	_, err = db.DB.Exec(query, newMoney.Amount, time.Now(), wallet.ID)
 	if err != nil {
 		return fmt.Errorf("failed to add money to wallet: %w", err)
 	}
@@ -84,8 +73,8 @@ func (db *PostgreSQL) AddMoneyToWallet(walletID int, moneyToAdd money.Money) err
 	return nil
 }
 
-func (db *PostgreSQL) WithdrawMoneyFromWallet(walletID int, moneyToWithdraw money.Money) (money.Money, error) {
-	wallet, err := db.GetWalletByID(walletID)
+func (db *PostgreSQL) WithdrawMoneyFromWallet(userID int, moneyToWithdraw money.Money) (money.Money, error) {
+	wallet, err := db.GetWalletByUserID(userID)
 	if err != nil {
 		return money.Money{}, err
 	}
@@ -96,7 +85,7 @@ func (db *PostgreSQL) WithdrawMoneyFromWallet(walletID int, moneyToWithdraw mone
 	}
 
 	query := `UPDATE wallet SET amount=$1, updated_at=$2 WHERE id=$3`
-	_, err = db.DB.Exec(query, remainedMoney.Amount, time.Now(), walletID)
+	_, err = db.DB.Exec(query, remainedMoney.Amount, time.Now(), wallet.ID)
 	if err != nil {
 		return money.Money{}, fmt.Errorf("failed to withdraw money from wallet: %w", err)
 	}
