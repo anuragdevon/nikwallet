@@ -116,7 +116,7 @@ func (wh *WalletHandlers) TransferMoneyHandler(w http.ResponseWriter, r *http.Re
 	}
 
 	if err := wh.walletService.TransferMoney(userID, payload.RecipientEmail, payload.Amount); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 

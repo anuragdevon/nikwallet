@@ -308,4 +308,60 @@ func TestWalletHandlers(t *testing.T) {
 		}
 	})
 
+	t.Run("TransferMoneyHandler to return 500 InternalServerError for invalid recipient email", func(t *testing.T) {
+		sender := &database.User{
+			EmailID:  "sender@example.com",
+			Password: "test123",
+		}
+		senderID, _ := userService.CreateUser(sender)
+		_, _ = walletService.CreateWallet(senderID)
+
+		invalidRecipientEmail := "invalidemail"
+		transferMoney, _ := money.NewMoney(50, "INR")
+
+		transferMoneyPayload := map[string]interface{}{
+			"amount":          transferMoney,
+			"recipient_email": invalidRecipientEmail,
+		}
+
+		reqBody, _ := json.Marshal(transferMoneyPayload)
+
+		url := "/wallet/transfer"
+		req, _ := http.NewRequest("PUT", url, bytes.NewReader(reqBody))
+
+		IDToken, _ := authService.AuthenticateUser(sender.EmailID, sender.Password)
+		req.Header.Set("id_token", IDToken)
+
+		recorder := httptest.NewRecorder()
+		http.HandlerFunc(walletHandlers.TransferMoneyHandler).ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusInternalServerError, recorder.Code)
+	})
+
+	t.Run("TransferMoneyHandler to return 400 BadRequest for invalid payload", func(t *testing.T) {
+		sender := &database.User{
+			EmailID:  "sender@example.com",
+			Password: "test123",
+		}
+		senderID, _ := userService.CreateUser(sender)
+		_, _ = walletService.CreateWallet(senderID)
+
+		IDToken, _ := authService.AuthenticateUser(sender.EmailID, sender.Password)
+
+		invalidPayload := []byte(`{"amount": "100", "recipient_email": "recipient@example.com"}`)
+
+		url := "/wallet/transfer"
+		req, _ := http.NewRequest("PUT", url, bytes.NewReader(invalidPayload))
+		req.Header.Set("id_token", IDToken)
+
+		recorder := httptest.NewRecorder()
+		http.HandlerFunc(walletHandlers.TransferMoneyHandler).ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
+
+		var response handlers.Response
+		err = json.NewDecoder(recorder.Body).Decode(&response)
+		assert.Error(t, err, "invalid amount")
+	})
+
 }
