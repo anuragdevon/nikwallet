@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -213,7 +214,7 @@ func TestWalletHandlers(t *testing.T) {
 		assert.Error(t, err, "insufficient funds")
 	})
 
-	t.Run("WithdrawMoneyFromWalletHandler to return status 400 bad request for InvalidAmount", func(t *testing.T) {
+	t.Run("WithdrawMoneyFromWalletHandler to return status 400 BadRequest for InvalidAmount", func(t *testing.T) {
 		newUser := &database.User{
 			EmailID:  "testw5115@example.com",
 			Password: "password",
@@ -250,6 +251,61 @@ func TestWalletHandlers(t *testing.T) {
 		var response handlers.Response
 		err = json.NewDecoder(recorder.Body).Decode(&response)
 		assert.Error(t, err, "invalid amount")
+	})
+
+	t.Run("TransferMoneyHandler to return 200 StatusOk for successful transfer of money from sender to reciever", func(t *testing.T) {
+		sender := &database.User{
+			EmailID:  "sender@example.com",
+			Password: "test123",
+		}
+		senderID, _ := userService.CreateUser(sender)
+		_, _ = walletService.CreateWallet(senderID)
+
+		recipient := &database.User{
+			EmailID:  "recipient@example.com",
+			Password: "test123",
+		}
+		recipientID, _ := userService.CreateUser(recipient)
+		_, _ = walletService.CreateWallet(recipientID)
+
+		initialMoney, _ := money.NewMoney(100, "INR")
+		_ = walletService.AddMoneyToWallet(senderID, *initialMoney)
+
+		IDToken, _ := authService.AuthenticateUser(sender.EmailID, sender.Password)
+
+		transferMoney, _ := money.NewMoney(50, "INR")
+
+		transferMoneyPayload := map[string]interface{}{
+			"amount":          transferMoney,
+			"recipient_email": recipient.EmailID,
+		}
+
+		reqBody, _ := json.Marshal(transferMoneyPayload)
+
+		url := "/wallet/transfer"
+		req, _ := http.NewRequest("PUT", url, bytes.NewReader(reqBody))
+		req.Header.Set("id_token", IDToken)
+
+		recorder := httptest.NewRecorder()
+		http.HandlerFunc(walletHandlers.TransferMoneyHandler).ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+		var response handlers.Response
+		err := json.NewDecoder(recorder.Body).Decode(&response)
+		assert.NoError(t, err)
+		assert.Equal(t, "money transferred successfully", response.Message)
+
+		expectedSenderMoney, _ := money.NewMoney(50, "INR")
+		senderWallet, _ := walletService.GetWalletByUserID(senderID)
+		if !reflect.DeepEqual(&senderWallet.Money, expectedSenderMoney) {
+			t.Errorf("TransferMoneyHandler() sender balance got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
+		}
+
+		expectedRecipientMoney, _ := money.NewMoney(50, "INR")
+		recipientWallet, _ := walletService.GetWalletByUserID(recipientID)
+		if !reflect.DeepEqual(&recipientWallet.Money, expectedRecipientMoney) {
+			t.Errorf("TransferMoneyHandler() recipient balance got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
+		}
 	})
 
 }
