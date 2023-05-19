@@ -261,7 +261,7 @@ func TestWalletHandlers(t *testing.T) {
 		assert.Error(t, err, "invalid amount")
 	})
 
-	t.Run("TransferMoneyHandler to return 200 StatusOk for successful transfer of money from sender to reciever", func(t *testing.T) {
+	t.Run("TransferMoneyHandler to return 200 StatusOk for successful transfer of money from sender to reciever having same currency", func(t *testing.T) {
 		sender := &database.User{
 			EmailID:  "sender@example.com",
 			Password: "test123",
@@ -310,6 +310,61 @@ func TestWalletHandlers(t *testing.T) {
 		}
 
 		expectedRecipientMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
+		recipientWallet, _ := walletService.GetWalletByUserID(recipientID)
+		if !reflect.DeepEqual(&recipientWallet.Money, &expectedRecipientMoney) {
+			t.Errorf("TransferMoneyHandler() recipient balance got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
+		}
+	})
+
+	t.Run("TransferMoneyHandler to return 200 StatusOk for successful transfer of money from sender to reciever having different currency", func(t *testing.T) {
+		sender := &database.User{
+			EmailID:  "senderUSA@example.com",
+			Password: "test123",
+		}
+		senderID, _ := userService.CreateUser(sender)
+		_, _ = walletService.CreateWallet(senderID, money.USD)
+
+		recipient := &database.User{
+			EmailID:  "recipientFrance@example.com",
+			Password: "test123",
+		}
+		recipientID, _ := userService.CreateUser(recipient)
+		_, _ = walletService.CreateWallet(recipientID, money.EUR)
+
+		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(10.0), money.USD)
+		_ = walletService.AddMoneyToWallet(senderID, *initialMoney)
+
+		IDToken, _ := authService.AuthenticateUser(sender.EmailID, sender.Password)
+
+		transferMoney, _ := money.NewMoney(decimal.NewFromFloat(2.0), money.USD)
+
+		transferMoneyPayload := map[string]interface{}{
+			"amount":          transferMoney,
+			"recipient_email": recipient.EmailID,
+		}
+
+		reqBody, _ := json.Marshal(transferMoneyPayload)
+
+		url := "/wallet/transfer"
+		req, _ := http.NewRequest("PUT", url, bytes.NewReader(reqBody))
+		req.Header.Set("id_token", IDToken)
+
+		recorder := httptest.NewRecorder()
+		http.HandlerFunc(walletHandlers.TransferMoneyHandler).ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+		var response handlers.Response
+		err := json.NewDecoder(recorder.Body).Decode(&response)
+		assert.NoError(t, err)
+		assert.Equal(t, "money transferred successfully", response.Message)
+
+		expectedSenderMoney, _ := money.NewMoney(decimal.NewFromFloat(8.0), money.USD)
+		senderWallet, _ := walletService.GetWalletByUserID(senderID)
+		if !reflect.DeepEqual(&senderWallet.Money, &expectedSenderMoney) {
+			t.Errorf("TransferMoneyHandler() sender balance got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
+		}
+
+		expectedRecipientMoney, _ := money.NewMoney(decimal.NewFromFloat(2.18), money.EUR)
 		recipientWallet, _ := walletService.GetWalletByUserID(recipientID)
 		if !reflect.DeepEqual(&recipientWallet.Money, &expectedRecipientMoney) {
 			t.Errorf("TransferMoneyHandler() recipient balance got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
