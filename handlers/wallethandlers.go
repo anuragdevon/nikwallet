@@ -35,7 +35,16 @@ func (wh *WalletHandlers) CreateWalletHandler(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	wallet, err := wh.walletService.CreateWallet(userID)
+	var payload struct {
+		Currency money.Currency `json:"currency"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+		http.Error(w, "invalid payload", http.StatusBadRequest)
+		return
+	}
+
+	wallet, err := wh.walletService.CreateWallet(userID, payload.Currency)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(Response{Error: err.Error()})
