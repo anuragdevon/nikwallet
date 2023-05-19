@@ -1,15 +1,16 @@
 package services
 
 import (
-	"database/sql"
 	"nikwallet/database"
+
+	"gorm.io/gorm"
 )
 
 type UserService struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func NewUserService(db *sql.DB) *UserService {
+func NewUserService(db *gorm.DB) *UserService {
 	return &UserService{db: db}
 }
 
