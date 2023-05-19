@@ -26,6 +26,11 @@ type Response struct {
 	Error   string `json:"error,omitempty"`
 }
 
+type MoneyTransfer struct {
+	Amount         *money.Money `json:"amount"`
+	RecipientEmail string       `json:"recipient_email"`
+}
+
 func (wh *WalletHandlers) CreateWalletHandler(respWriter http.ResponseWriter, req *http.Request) {
 	IDToken := req.Header.Get("id_token")
 	_, userID, err := wh.authService.VerifyToken(IDToken)
@@ -114,17 +119,14 @@ func (wh *WalletHandlers) TransferMoneyHandler(respWriter http.ResponseWriter, r
 		return
 	}
 
-	var payload struct {
-		Amount         money.Money `json:"amount"`
-		RecipientEmail string      `json:"recipient_email"`
-	}
+	var transferPayload MoneyTransfer
 
-	if err := json.NewDecoder(req.Body).Decode(&payload); err != nil {
+	if err := json.NewDecoder(req.Body).Decode(&transferPayload); err != nil {
 		http.Error(respWriter, "invalid payload", http.StatusBadRequest)
 		return
 	}
 
-	if err := wh.walletService.TransferMoney(userID, payload.RecipientEmail, payload.Amount); err != nil {
+	if err := wh.walletService.TransferMoney(userID, transferPayload.RecipientEmail, *transferPayload.Amount); err != nil {
 		http.Error(respWriter, err.Error(), http.StatusInternalServerError)
 		return
 	}

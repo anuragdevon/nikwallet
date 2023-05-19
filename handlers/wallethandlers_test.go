@@ -288,9 +288,9 @@ func TestWalletHandlers(t *testing.T) {
 
 		transferMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 
-		transferMoneyPayload := map[string]interface{}{
-			"amount":          transferMoney,
-			"recipient_email": recipient.EmailID,
+		transferMoneyPayload := handlers.MoneyTransfer{
+			Amount:         transferMoney,
+			RecipientEmail: recipient.EmailID,
 		}
 
 		reqBody, _ := json.Marshal(transferMoneyPayload)
@@ -343,9 +343,9 @@ func TestWalletHandlers(t *testing.T) {
 
 		transferMoney, _ := money.NewMoney(decimal.NewFromFloat(2.0), money.USD)
 
-		transferMoneyPayload := map[string]interface{}{
-			"amount":          transferMoney,
-			"recipient_email": recipient.EmailID,
+		transferMoneyPayload := handlers.MoneyTransfer{
+			Amount:         transferMoney,
+			RecipientEmail: recipient.EmailID,
 		}
 
 		reqBody, _ := json.Marshal(transferMoneyPayload)
@@ -387,9 +387,9 @@ func TestWalletHandlers(t *testing.T) {
 		invalidRecipientEmail := "invalidemail"
 		transferMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 
-		transferMoneyPayload := map[string]interface{}{
-			"amount":          transferMoney,
-			"recipient_email": invalidRecipientEmail,
+		transferMoneyPayload := handlers.MoneyTransfer{
+			Amount:         transferMoney,
+			RecipientEmail: invalidRecipientEmail,
 		}
 
 		reqBody, _ := json.Marshal(transferMoneyPayload)
