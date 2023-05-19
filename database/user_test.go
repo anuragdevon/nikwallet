@@ -6,13 +6,6 @@ import (
 )
 
 func TestUser(t *testing.T) {
-	db := &PostgreSQL{}
-	err := db.Connect("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer db.Close()
-
 	t.Run("CreateUser method to successfully create user with valid data", func(t *testing.T) {
 		user := &User{
 			EmailID:  "test@example.com",
@@ -34,7 +27,7 @@ func TestUser(t *testing.T) {
 			Password: "password123",
 		}
 
-		_, err = db.CreateUser(user)
+		_, err := db.CreateUser(user)
 		if err != nil {
 			t.Fatalf("Failed to create user: %v", err)
 		}
@@ -94,7 +87,7 @@ func TestUser(t *testing.T) {
 
 	t.Run("GetUserByEmail method to return error for invalid emailID", func(t *testing.T) {
 		userEmail := "nonexistent@example.com"
-		_, err = db.GetUserByEmail(userEmail)
+		_, err := db.GetUserByEmail(userEmail)
 		if err == nil {
 			t.Fatalf("expected GetUserByEmail() to return an error, but got nil")
 		}

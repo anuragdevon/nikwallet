@@ -9,13 +9,6 @@ import (
 )
 
 func TestWallet(t *testing.T) {
-	db := &PostgreSQL{}
-	err := db.Connect("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer db.Close()
-
 	t.Run("CreateWallet method to create a valid wallet for successful user creation", func(t *testing.T) {
 		newUser := &User{
 			EmailID:  "testwallet511@example.com",
@@ -55,7 +48,7 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("GetWalletByUserID method to return error for NonExistentUser", func(t *testing.T) {
-		_, err = db.GetWalletByUserID(9999)
+		_, err := db.GetWalletByUserID(9999)
 		if err == nil {
 			t.Fatal("Expected error, but got nil")
 		}
@@ -259,7 +252,7 @@ func TestWallet(t *testing.T) {
 
 		wrongRecipientEmail := "wrong_recipient@example.com"
 		wrongTransferAmount, _ := money.NewMoney(decimal.NewFromFloat(20.0), money.EUR)
-		err = db.TransferMoney(senderID, wrongRecipientEmail, *wrongTransferAmount)
+		err := db.TransferMoney(senderID, wrongRecipientEmail, *wrongTransferAmount)
 		if err == nil {
 			t.Fatal("TransferMoney() expected error, got nil")
 		}

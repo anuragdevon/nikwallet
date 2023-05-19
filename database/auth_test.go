@@ -9,13 +9,6 @@ import (
 )
 
 func TestAuth(t *testing.T) {
-	db := &PostgreSQL{}
-	err := db.Connect("testdb")
-	if err != nil {
-		t.Fatalf("failed to connect to database: %v", err)
-	}
-	defer db.Close()
-
 	t.Run("Authenticate method to authenticate user with correct credentials", func(t *testing.T) {
 		email := "testw51@example.com"
 		password := "password"

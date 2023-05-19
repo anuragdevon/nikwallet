@@ -3,7 +3,6 @@ package handlers_test
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -16,12 +15,6 @@ import (
 )
 
 func TestUserHandlers(t *testing.T) {
-	db := &database.PostgreSQL{}
-	err := db.Connect("testdb")
-	if err != nil {
-		log.Panic("failed to connect to database:", err)
-	}
-	defer db.Close()
 
 	userService := services.NewUserService(db.DB)
 	authService := services.NewAuthService(db.DB)
@@ -59,7 +52,7 @@ func TestUserHandlers(t *testing.T) {
 			Password: "password",
 		}
 
-		_, err = userService.CreateUser(newUser)
+		_, err := userService.CreateUser(newUser)
 		assert.NoError(t, err)
 
 		duplicateUser := map[string]interface{}{

@@ -3,7 +3,6 @@ package handlers_test
 import (
 	"bytes"
 	"encoding/json"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -19,12 +18,6 @@ import (
 )
 
 func TestWalletHandlers(t *testing.T) {
-	db := &database.PostgreSQL{}
-	err := db.Connect("testdb")
-	if err != nil {
-		log.Panic("failed to connect to database:", err)
-	}
-	defer db.Close()
 
 	userService := services.NewUserService(db.DB)
 	authService := services.NewAuthService(db.DB)
@@ -38,7 +31,7 @@ func TestWalletHandlers(t *testing.T) {
 			Password: "password",
 		}
 
-		_, err = userService.CreateUser(newUser)
+		_, err := userService.CreateUser(newUser)
 		assert.NoError(t, err)
 
 		token, err := authService.AuthenticateUser(newUser.EmailID, newUser.Password)
@@ -435,7 +428,7 @@ func TestWalletHandlers(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
 		var response handlers.Response
-		err = json.NewDecoder(recorder.Body).Decode(&response)
+		err := json.NewDecoder(recorder.Body).Decode(&response)
 		assert.Error(t, err, "invalid amount")
 	})
 }
