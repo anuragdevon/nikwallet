@@ -76,7 +76,7 @@ func TestUser(t *testing.T) {
 			t.Fatalf("failed to get user by email: %v", err)
 		}
 
-		if user.ID != userID {
+		if int(user.ID) != userID {
 			t.Errorf("GetUserByEmail() returned wrong user ID, got %d, want %d", user.ID, userID)
 		}
 

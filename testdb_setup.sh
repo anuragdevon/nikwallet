@@ -13,8 +13,11 @@ psql -U postgres -d ${DB_NAME} << EOF
 
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
-  email TEXT UNIQUE NOT NULL,
-  password TEXT NOT NULL
+  email_id TEXT UNIQUE NOT NULL,
+  password TEXT NOT NULL,
+  created_at TIMESTAMP DEFAULT now(),
+  updated_at TIMESTAMP DEFAULT now(),
+  deleted_at TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE wallet (
