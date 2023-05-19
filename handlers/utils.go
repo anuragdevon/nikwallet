@@ -5,13 +5,13 @@ import (
 	"encoding/json"
 )
 
-func JsonEqual(a, b []byte) bool {
-	var j, j2 interface{}
-	if err := json.Unmarshal(a, &j); err != nil {
+func JsonEqual(json1, json2 []byte) bool {
+	var json1Interface, json2interface interface{}
+	if err := json.Unmarshal(json1, &json1Interface); err != nil {
 		return false
 	}
-	if err := json.Unmarshal(b, &j2); err != nil {
+	if err := json.Unmarshal(json2, &json2interface); err != nil {
 		return false
 	}
-	return bytes.Equal(a, b)
+	return bytes.Equal(json1, json2)
 }

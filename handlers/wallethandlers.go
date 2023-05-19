@@ -26,12 +26,12 @@ type Response struct {
 	Error   string `json:"error,omitempty"`
 }
 
-func (wh *WalletHandlers) CreateWalletHandler(w http.ResponseWriter, r *http.Request) {
-	IDToken := r.Header.Get("id_token")
+func (wh *WalletHandlers) CreateWalletHandler(respWriter http.ResponseWriter, req *http.Request) {
+	IDToken := req.Header.Get("id_token")
 	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(Response{Error: err.Error()})
+		respWriter.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
 		return
 	}
 
@@ -39,78 +39,78 @@ func (wh *WalletHandlers) CreateWalletHandler(w http.ResponseWriter, r *http.Req
 		Currency money.Currency `json:"currency"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "invalid payload", http.StatusBadRequest)
+	if err := json.NewDecoder(req.Body).Decode(&payload); err != nil {
+		http.Error(respWriter, "invalid payload", http.StatusBadRequest)
 		return
 	}
 
 	wallet, err := wh.walletService.CreateWallet(userID, payload.Currency)
 	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(Response{Error: err.Error()})
+		respWriter.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
 		return
 	}
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(wallet)
+	respWriter.WriteHeader(http.StatusCreated)
+	json.NewEncoder(respWriter).Encode(wallet)
 }
 
-func (wh *WalletHandlers) AddMoneyToWalletHandler(w http.ResponseWriter, r *http.Request) {
-	IDToken := r.Header.Get("id_token")
+func (wh *WalletHandlers) AddMoneyToWalletHandler(respWriter http.ResponseWriter, req *http.Request) {
+	IDToken := req.Header.Get("id_token")
 	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(Response{Error: err.Error()})
+		respWriter.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
 		return
 	}
 
-	var m money.Money
-	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
-		http.Error(w, "invalid amount", http.StatusBadRequest)
+	var moneyToAdd money.Money
+	if err := json.NewDecoder(req.Body).Decode(&moneyToAdd); err != nil {
+		http.Error(respWriter, "invalid amount", http.StatusBadRequest)
 		return
 	}
 
-	if err := wh.walletService.AddMoneyToWallet(userID, m); err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(Response{Error: err.Error()})
+	if err := wh.walletService.AddMoneyToWallet(userID, moneyToAdd); err != nil {
+		respWriter.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(Response{Message: "money added to wallet successfully"})
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(Response{Message: "money added to wallet successfully"})
 }
 
-func (wh *WalletHandlers) WithdrawMoneyFromWalletHandler(w http.ResponseWriter, r *http.Request) {
-	IDToken := r.Header.Get("id_token")
+func (wh *WalletHandlers) WithdrawMoneyFromWalletHandler(respWriter http.ResponseWriter, req *http.Request) {
+	IDToken := req.Header.Get("id_token")
 	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(Response{Error: err.Error()})
+		respWriter.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
 		return
 	}
 
-	var m money.Money
-	if err := json.NewDecoder(r.Body).Decode(&m); err != nil {
-		http.Error(w, "invalid amount", http.StatusBadRequest)
+	var moneyToAdd money.Money
+	if err := json.NewDecoder(req.Body).Decode(&moneyToAdd); err != nil {
+		http.Error(respWriter, "invalid amount", http.StatusBadRequest)
 		return
 	}
 	var withdrawnMoney money.Money
 
-	if withdrawnMoney, err = wh.walletService.WithdrawMoneyFromWallet(userID, m); err != nil {
-		http.Error(w, "insufficient funds", http.StatusBadRequest)
+	if withdrawnMoney, err = wh.walletService.WithdrawMoneyFromWallet(userID, moneyToAdd); err != nil {
+		http.Error(respWriter, "insufficient funds", http.StatusBadRequest)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(&withdrawnMoney)
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(&withdrawnMoney)
 }
 
-func (wh *WalletHandlers) TransferMoneyHandler(w http.ResponseWriter, r *http.Request) {
-	IDToken := r.Header.Get("id_token")
+func (wh *WalletHandlers) TransferMoneyHandler(respWriter http.ResponseWriter, req *http.Request) {
+	IDToken := req.Header.Get("id_token")
 	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
-		w.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(w).Encode(Response{Error: err.Error()})
+		respWriter.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
 		return
 	}
 
@@ -119,16 +119,16 @@ func (wh *WalletHandlers) TransferMoneyHandler(w http.ResponseWriter, r *http.Re
 		RecipientEmail string      `json:"recipient_email"`
 	}
 
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
-		http.Error(w, "invalid payload", http.StatusBadRequest)
+	if err := json.NewDecoder(req.Body).Decode(&payload); err != nil {
+		http.Error(respWriter, "invalid payload", http.StatusBadRequest)
 		return
 	}
 
 	if err := wh.walletService.TransferMoney(userID, payload.RecipientEmail, payload.Amount); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(respWriter, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(Response{Message: "money transferred successfully"})
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(Response{Message: "money transferred successfully"})
 }

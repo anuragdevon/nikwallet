@@ -20,44 +20,44 @@ func NewUserHandlers(userService *services.UserService, authService *services.Au
 	}
 }
 
-func (uh *UserHandlers) SignupHandler(w http.ResponseWriter, r *http.Request) {
-	var u database.User
+func (uh *UserHandlers) SignupHandler(respWriter http.ResponseWriter, req *http.Request) {
+	var userData database.User
 
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := json.NewDecoder(req.Body).Decode(&userData); err != nil {
+		http.Error(respWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
-	createdUserID, err := uh.userService.CreateUser(&u)
+	createdUserID, err := uh.userService.CreateUser(&userData)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(respWriter, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	tokenString, _ := uh.authService.AuthenticateUser(u.EmailID, u.Password)
+	tokenString, _ := uh.authService.AuthenticateUser(userData.EmailID, userData.Password)
 
-	w.WriteHeader(http.StatusCreated)
-	json.NewEncoder(w).Encode(map[string]interface{}{
+	respWriter.WriteHeader(http.StatusCreated)
+	json.NewEncoder(respWriter).Encode(map[string]interface{}{
 		"user_id": createdUserID,
 		"token":   tokenString,
 	})
 }
 
-func (uh *UserHandlers) SigninHandler(w http.ResponseWriter, r *http.Request) {
-	var u database.User
+func (uh *UserHandlers) SigninHandler(respWriter http.ResponseWriter, req *http.Request) {
+	var userData database.User
 
-	if err := json.NewDecoder(r.Body).Decode(&u); err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	if err := json.NewDecoder(req.Body).Decode(&userData); err != nil {
+		http.Error(respWriter, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	tokenString, err := uh.authService.AuthenticateUser(u.EmailID, u.Password)
+	tokenString, err := uh.authService.AuthenticateUser(userData.EmailID, userData.Password)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusUnauthorized)
+		http.Error(respWriter, err.Error(), http.StatusUnauthorized)
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
-	json.NewEncoder(w).Encode(map[string]string{
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(map[string]string{
 		"token": tokenString,
 	})
 }

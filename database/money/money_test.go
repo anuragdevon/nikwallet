@@ -10,19 +10,19 @@ func TestMoney(t *testing.T) {
 	t.Run("NewMoney create new money for valid input INR", func(t *testing.T) {
 		amount := decimal.NewFromFloat(10.0)
 		currency := INR
-		m, err := NewMoney(amount, currency)
+		newTenRupeesMoney, err := NewMoney(amount, currency)
 
 		if err != nil {
 			t.Errorf("NewMoney() error = %v, want nil", err)
 			return
 		}
 
-		if !m.Amount.Equal(amount) {
-			t.Errorf("NewMoney() m.Amount = %d, want %d", m.Amount, amount)
+		if !newTenRupeesMoney.Amount.Equal(amount) {
+			t.Errorf("NewMoney() Amount = %d, want %d", newTenRupeesMoney.Amount, amount)
 		}
 
-		if m.Currency != currency {
-			t.Errorf("NewMoney() m.Currency = %s, want %s", m.Currency, currency)
+		if newTenRupeesMoney.Currency != currency {
+			t.Errorf("NewMoney() Currency = %s, want %s", newTenRupeesMoney.Currency, currency)
 		}
 	})
 

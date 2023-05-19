@@ -42,13 +42,13 @@ func NewMoney(amount decimal.Decimal, currency Currency) (*Money, error) {
 	}, nil
 }
 
-func (m *Money) ToBaseCurrency() (*Money, error) {
-	baseFactor, err := ConversionFactors[m.Currency]
+func (mon *Money) ToBaseCurrency() (*Money, error) {
+	baseFactor, err := ConversionFactors[mon.Currency]
 	if !err {
 		return nil, fmt.Errorf("unsupported currency conversion")
 	}
 
-	convertedAmount := m.Amount.Mul(baseFactor)
+	convertedAmount := mon.Amount.Mul(baseFactor)
 
 	return &Money{
 		Amount:   convertedAmount,
@@ -56,8 +56,8 @@ func (m *Money) ToBaseCurrency() (*Money, error) {
 	}, nil
 }
 
-func (m *Money) Add(money *Money) (*Money, error) {
-	baseCurrencyMoney, err := m.ToBaseCurrency()
+func (mon *Money) Add(money *Money) (*Money, error) {
+	baseCurrencyMoney, err := mon.ToBaseCurrency()
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (m *Money) Add(money *Money) (*Money, error) {
 
 	addedAmount := baseCurrencyMoney.Amount.Add(otherBaseCurrencyMoney.Amount)
 
-	conversionFactor, ok := ConversionFactors[m.Currency]
+	conversionFactor, ok := ConversionFactors[mon.Currency]
 	if !ok {
 		return nil, fmt.Errorf("unsupported currency conversion")
 	}
@@ -78,16 +78,16 @@ func (m *Money) Add(money *Money) (*Money, error) {
 
 	return &Money{
 		Amount:   convertedAmount,
-		Currency: m.Currency,
+		Currency: mon.Currency,
 	}, nil
 }
 
-func (m *Money) Subtract(money *Money) (*Money, error) {
-	if m.Currency != money.Currency {
+func (mon *Money) Subtract(money *Money) (*Money, error) {
+	if mon.Currency != money.Currency {
 		return nil, fmt.Errorf("cannot subtract money with different currency")
 	}
 
-	baseCurrencyMoney, err := m.ToBaseCurrency()
+	baseCurrencyMoney, err := mon.ToBaseCurrency()
 	if err != nil {
 		return nil, err
 	}
@@ -103,7 +103,7 @@ func (m *Money) Subtract(money *Money) (*Money, error) {
 
 	subtractedAmount := baseCurrencyMoney.Amount.Sub(otherBaseCurrencyMoney.Amount)
 
-	conversionFactor, ok := ConversionFactors[m.Currency]
+	conversionFactor, ok := ConversionFactors[mon.Currency]
 	if !ok {
 		return nil, fmt.Errorf("unsupported currency conversion")
 	}
@@ -112,6 +112,6 @@ func (m *Money) Subtract(money *Money) (*Money, error) {
 
 	return &Money{
 		Amount:   convertedAmount,
-		Currency: m.Currency,
+		Currency: mon.Currency,
 	}, nil
 }

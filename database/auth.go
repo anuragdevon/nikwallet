@@ -16,16 +16,16 @@ type Claims struct {
 }
 
 func (db *PostgreSQL) AuthenticateUser(email string, password string) (string, error) {
-	u, err := db.GetUserByEmail(email)
+	user, err := db.GetUserByEmail(email)
 	if err != nil {
 		return "", err
 	}
-	if password != u.Password {
+	if password != user.Password {
 		return "", errors.New("invalid email or password")
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
-		UserID: u.ID,
+		UserID: user.ID,
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 		},
