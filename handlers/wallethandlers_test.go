@@ -102,6 +102,12 @@ func TestWalletHandlers(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Equal(t, "money added to wallet successfully", response.Message)
+
+		expectedAddedMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
+		senderWallet, _ := walletService.GetWalletByUserID(userID)
+		if !reflect.DeepEqual(&senderWallet.Money, &expectedAddedMoney) {
+			t.Errorf("AddMoneyToWalletHandler() user balance got = %v, want = %v", senderWallet.Money, expectedAddedMoney)
+		}
 	})
 
 	t.Run("AddMoneyToWalletHandler to return status 400 bad request for InvalidAmount", func(t *testing.T) {
@@ -181,6 +187,12 @@ func TestWalletHandlers(t *testing.T) {
 		var wallet *database.Wallet
 		err = json.NewDecoder(recorder.Body).Decode(&wallet)
 		assert.NoError(t, err)
+
+		expectedRemainedMoney, _ := money.NewMoney(decimal.NewFromFloat(0.0), money.INR)
+		senderWallet, _ := walletService.GetWalletByUserID(userID)
+		if !reflect.DeepEqual(&senderWallet.Money, &expectedRemainedMoney) {
+			t.Errorf("WithdrawMoneyFromWalletHandler() user balance got = %v, want = %v", senderWallet.Money, expectedRemainedMoney)
+		}
 	})
 
 	t.Run("WithdrawMoneyFromWalletHandler to return status 400 bad request for InsufficientFunds", func(t *testing.T) {
