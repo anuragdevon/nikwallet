@@ -1,4 +1,4 @@
-package handlers_test
+package handlers
 
 import (
 	"bytes"
@@ -9,9 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"nikwallet/repository"
 	"nikwallet/repository/models"
-	"nikwallet/handlers"
 	"nikwallet/services"
 )
 
@@ -19,7 +17,7 @@ func TestUserHandlers(t *testing.T) {
 
 	userService := services.NewUserService(db.DB)
 	authService := services.NewAuthService(db.DB)
-	userHandlers := handlers.NewUserHandlers(userService, authService)
+	userHandlers := NewUserHandlers(userService, authService)
 
 	t.Run("SignupHandler to return 201 StatusCreated for valid user creation", func(t *testing.T) {
 		signupRequest := map[string]interface{}{

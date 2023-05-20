@@ -1,7 +1,8 @@
 package services
 
 import (
-	"nikwallet/database"
+	"nikwallet/repository/models"
+	"nikwallet/repository"
 
 	"gorm.io/gorm"
 )
@@ -14,17 +15,17 @@ func NewUserService(db *gorm.DB) *UserService {
 	return &UserService{db: db}
 }
 
-func (us *UserService) CreateUser(newUser *database.User) (int, error) {
-	db := database.PostgreSQL{DB: us.db}
+func (us *UserService) CreateUser(newUser *models.User) (int, error) {
+	db := repository.PostgreSQL{DB: us.db}
 	return db.CreateUser(newUser)
 }
 
-func (us *UserService) GetUserByID(id int) (*database.User, error) {
-	db := database.PostgreSQL{DB: us.db}
+func (us *UserService) GetUserByID(id int) (*models.User, error) {
+	db := repository.PostgreSQL{DB: us.db}
 	return db.GetUserByID(id)
 }
 
-func (us *UserService) GetUserByEmail(email string) (*database.User, error) {
-	db := database.PostgreSQL{DB: us.db}
+func (us *UserService) GetUserByEmail(email string) (*models.User, error) {
+	db := repository.PostgreSQL{DB: us.db}
 	return db.GetUserByEmail(email)
 }

@@ -3,7 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
-	"nikwallet/database/money"
+	"nikwallet/repository/money"
 	"nikwallet/services"
 )
 
