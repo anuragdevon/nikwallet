@@ -13,7 +13,7 @@ import (
 
 func StartServer() {
 	db := &repository.PostgreSQL{}
-	err := db.Connect("testdb1")
+	err := db.Connect("testdb")
 	if err != nil {
 		log.Panic("failed to connect to database:", err)
 	}

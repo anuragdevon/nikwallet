@@ -12,3 +12,7 @@ CREATE TABLE wallet (
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
 );
+
+docker run --name testdb -v init_db.sh:/docker-entrypoint-initdb.d/init_db.sh -e POSTGRES_PASSWORD=postgres -p 5432:5432 -d postgres
+
+docker run -d --rm --name testingdb -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres

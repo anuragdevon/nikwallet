@@ -12,7 +12,7 @@ type PostgreSQL struct {
 }
 
 func (p *PostgreSQL) Connect(dbName string) error {
-	dsn := fmt.Sprintf("user=postgres password=postgres dbname=%s sslmode=disable", dbName)
+	dsn := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s sslmode=disable", dbName)
 	var err error
 	p.DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
