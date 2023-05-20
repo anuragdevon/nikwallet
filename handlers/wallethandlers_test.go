@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
-	"reflect"
 	"testing"
 
 	"github.com/shopspring/decimal"
@@ -98,9 +97,10 @@ func TestWalletHandlers(t *testing.T) {
 
 		expectedAddedMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 		senderWallet, _ := walletService.GetWalletByUserID(userID)
-		if !reflect.DeepEqual(&senderWallet.Money, &expectedAddedMoney) {
-			t.Errorf("AddMoneyToWalletHandler() user balance got = %v, want = %v", senderWallet.Money, expectedAddedMoney)
+		if !senderWallet.Money.Equals(*expectedAddedMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, expectedAddedMoney)
 		}
+
 	})
 
 	t.Run("AddMoneyToWalletHandler to return status 400 bad request for InvalidAmount", func(t *testing.T) {
@@ -183,8 +183,8 @@ func TestWalletHandlers(t *testing.T) {
 
 		expectedRemainedMoney, _ := money.NewMoney(decimal.NewFromFloat(0.0), money.INR)
 		senderWallet, _ := walletService.GetWalletByUserID(userID)
-		if !reflect.DeepEqual(&senderWallet.Money, &expectedRemainedMoney) {
-			t.Errorf("WithdrawMoneyFromWalletHandler() user balance got = %v, want = %v", senderWallet.Money, expectedRemainedMoney)
+		if !senderWallet.Money.Equals(*expectedRemainedMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, expectedRemainedMoney)
 		}
 	})
 
@@ -310,14 +310,15 @@ func TestWalletHandlers(t *testing.T) {
 
 		expectedSenderMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 		senderWallet, _ := walletService.GetWalletByUserID(senderID)
-		if !reflect.DeepEqual(&senderWallet.Money, &expectedSenderMoney) {
-			t.Errorf("TransferMoneyHandler() sender balance got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
+		if !senderWallet.Money.Equals(*expectedSenderMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, initialMoney)
 		}
 
 		expectedRecipientMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 		recipientWallet, _ := walletService.GetWalletByUserID(recipientID)
-		if !reflect.DeepEqual(&recipientWallet.Money, &expectedRecipientMoney) {
-			t.Errorf("TransferMoneyHandler() recipient balance got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
+
+		if !recipientWallet.Money.Equals(*expectedRecipientMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
 		}
 	})
 
@@ -365,14 +366,14 @@ func TestWalletHandlers(t *testing.T) {
 
 		expectedSenderMoney, _ := money.NewMoney(decimal.NewFromFloat(8.0), money.USD)
 		senderWallet, _ := walletService.GetWalletByUserID(senderID)
-		if !reflect.DeepEqual(&senderWallet.Money, &expectedSenderMoney) {
-			t.Errorf("TransferMoneyHandler() sender balance got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
+		if !senderWallet.Money.Equals(*expectedSenderMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
 		}
 
 		expectedRecipientMoney, _ := money.NewMoney(decimal.NewFromFloat(2.18), money.EUR)
 		recipientWallet, _ := walletService.GetWalletByUserID(recipientID)
-		if !reflect.DeepEqual(&recipientWallet.Money, &expectedRecipientMoney) {
-			t.Errorf("TransferMoneyHandler() recipient balance got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
+		if !recipientWallet.Money.Equals(*expectedRecipientMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
 		}
 	})
 

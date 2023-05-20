@@ -1,7 +1,9 @@
 package money
 
 import (
+	"database/sql/driver"
 	"fmt"
+	"strings"
 
 	"github.com/shopspring/decimal"
 )
@@ -25,6 +27,40 @@ var ZeroAmountValue = decimal.NewFromFloat(0.0)
 type Money struct {
 	Amount   decimal.Decimal
 	Currency Currency
+}
+
+func (m Money) Equals(other Money) bool {
+	return m.Amount.Equal(other.Amount) && m.Currency == other.Currency
+}
+
+func (m *Money) Value() (driver.Value, error) {
+	return fmt.Sprintf("%s %s", m.Amount.String(), m.Currency), nil
+}
+
+func (m *Money) Scan(value interface{}) error {
+	if value == nil {
+		return nil
+	}
+
+	strValue, ok := value.(string)
+	if !ok {
+		return fmt.Errorf("unexpected value type: %T", value)
+	}
+
+	parts := strings.Split(strValue, " ")
+	if len(parts) != 2 {
+		return fmt.Errorf("invalid value format: %s", strValue)
+	}
+
+	amount, err := decimal.NewFromString(parts[0])
+	if err != nil {
+		return fmt.Errorf("failed to parse amount: %w", err)
+	}
+
+	m.Amount = amount
+	m.Currency = Currency(parts[1])
+
+	return nil
 }
 
 func NewMoney(amount decimal.Decimal, currency Currency) (*Money, error) {

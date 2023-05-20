@@ -75,9 +75,10 @@ func TestWallet(t *testing.T) {
 		}
 		updatedWallet, _ := db.GetWalletByUserID(newUserID)
 
-		if !reflect.DeepEqual(&updatedWallet.Money, &initialMoney) {
+		if !updatedWallet.Money.Equals(*initialMoney) {
 			t.Errorf("AddMoneyToWallet() got = %v, want = %v", updatedWallet.Money, initialMoney)
 		}
+
 	})
 
 	t.Run("AddMoneyToWallet method to add money to non empty wallet", func(t *testing.T) {
@@ -103,9 +104,10 @@ func TestWallet(t *testing.T) {
 		updatedWallet, _ := db.GetWalletByUserID(newUserID)
 
 		expectedMoney, _ := money.NewMoney(decimal.NewFromFloat(150.0), money.EUR)
-		if !reflect.DeepEqual(&updatedWallet.Money, &expectedMoney) {
-			t.Errorf("AddMoneyToWallet() got = %v, want = %v", updatedWallet.Money, expectedMoney)
+		if !updatedWallet.Money.Equals(*expectedMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", updatedWallet.Money, initialMoney)
 		}
+
 	})
 
 	t.Run("WithdrawMoneyFromWallet method to successfully return withdrawn money for valid input", func(t *testing.T) {
@@ -138,8 +140,8 @@ func TestWallet(t *testing.T) {
 		updatedWallet, _ := db.GetWalletByUserID(newUserID)
 
 		expectedMoneyRemained, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
-		if !reflect.DeepEqual(&updatedWallet.Money, &expectedMoneyRemained) {
-			t.Errorf("WithdrawMoneyFromWallet() remained got = %v, want = %v", updatedWallet.Money, expectedMoneyRemained)
+		if !updatedWallet.Money.Equals(*expectedMoneyRemained) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", updatedWallet.Money, initialMoney)
 		}
 
 	})
@@ -194,15 +196,16 @@ func TestWallet(t *testing.T) {
 
 		expectedSenderMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
 		senderWallet, _ := db.GetWalletByUserID(senderID)
-		if !reflect.DeepEqual(&senderWallet.Money, &expectedSenderMoney) {
-			t.Errorf("TransferMoney() sender balance got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
+		if !senderWallet.Money.Equals(*expectedSenderMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
 		}
 
 		expectedRecipientMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
 		recipientWallet, _ := db.GetWalletByUserID(senderID)
-		if !reflect.DeepEqual(&recipientWallet.Money, &expectedRecipientMoney) {
-			t.Errorf("TransferMoney() recipient balance got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
+		if !recipientWallet.Money.Equals(*expectedRecipientMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
 		}
+
 	})
 
 	t.Run("TransferMoney method to successfully transfer money from sender to receiver having different currencies", func(t *testing.T) {
@@ -231,14 +234,15 @@ func TestWallet(t *testing.T) {
 
 		expectedSenderMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
 		senderWallet, _ := db.GetWalletByUserID(senderID)
-		if !reflect.DeepEqual(&senderWallet.Money, &expectedSenderMoney) {
-			t.Errorf("TransferMoney() sender balance got: %v, want: %v", senderWallet.Money, expectedSenderMoney)
+		if !senderWallet.Money.Equals(*expectedSenderMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
 		}
+		
 
 		expectedRecipientMoney, _ := money.NewMoney(decimal.NewFromFloat(45.83), money.USD)
 		recipientWallet, _ := db.GetWalletByUserID(recipientID)
-		if !reflect.DeepEqual(&recipientWallet.Money, &expectedRecipientMoney) {
-			t.Errorf("TransferMoney() recipient balance got: %v, want: %v", recipientWallet.Money, expectedRecipientMoney)
+		if !recipientWallet.Money.Equals(*expectedRecipientMoney) {
+			t.Errorf("AddMoneyToWallet() got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
 		}
 	})
 

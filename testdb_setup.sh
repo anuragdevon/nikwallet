@@ -5,7 +5,7 @@
 DB_NAME="testdb"
 
 psql -U postgres -d ${DB_NAME} << EOF
-DROP TABLE IF EXISTS wallet;
+DROP TABLE IF EXISTS wallets;
 DROP TABLE IF EXISTS users;
 EOF
 
@@ -20,11 +20,10 @@ CREATE TABLE users (
   deleted_at TIMESTAMP DEFAULT now()
 );
 
-CREATE TABLE wallet (
+CREATE TABLE wallets (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    amount NUMERIC(15, 2) NOT NULL,
-    currency TEXT NOT NULL,
+    amount TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT now(),
     updated_at TIMESTAMP DEFAULT now()
 );
@@ -32,3 +31,6 @@ CREATE TABLE wallet (
 EOF
 
 echo "Tables created successfully."
+
+    # amount NUMERIC(15, 2) NOT NULL,
+    # currency TEXT NOT NULL,

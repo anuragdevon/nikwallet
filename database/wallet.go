@@ -27,7 +27,7 @@ func (db *PostgreSQL) CreateWallet(userID int, currency money.Currency) (*Wallet
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-
+ 
 	err = db.DB.Create(wallet).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to create wallet: %w", err)
