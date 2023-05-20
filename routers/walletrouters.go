@@ -11,8 +11,8 @@ import (
 func NewWalletRouter(handlers *handlers.WalletHandlers) *mux.Router {
 	router := mux.NewRouter()
 
-	router.HandleFunc("", handlers.CreateWalletHandler).Methods(http.MethodPost)
-	router.HandleFunc("", handlers.AddMoneyToWalletHandler).Methods(http.MethodPut)
+	router.HandleFunc("/", handlers.CreateWalletHandler).Methods(http.MethodPost)
+	router.HandleFunc("/", handlers.AddMoneyToWalletHandler).Methods(http.MethodPut)
 	router.HandleFunc("/withdraw", handlers.WithdrawMoneyFromWalletHandler).Methods(http.MethodPut)
 	router.HandleFunc("/transfer", handlers.WithdrawMoneyFromWalletHandler).Methods(http.MethodPut)
 

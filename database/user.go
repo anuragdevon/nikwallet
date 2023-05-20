@@ -6,8 +6,8 @@ import (
 
 type User struct {
 	ID       int
-	EmailID  string
-	Password string
+	EmailID  string `json:"email_id"`
+	Password string `json:"password"`
 }
 
 func (db *PostgreSQL) CreateUser(newUser *User) (int, error) {
