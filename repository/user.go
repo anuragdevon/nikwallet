@@ -1,18 +1,19 @@
-package database
+package repository
 
 import (
 	"fmt"
+	"nikwallet/repository/models"
 
 	"gorm.io/gorm"
 )
 
-type User struct {
-	gorm.Model
-	EmailID  string `gorm:"unique"`
-	Password string
+type UserDB interface {
+	CreateUser(newUser *models.User) (int, error)
+	GetUserByID(id int) (*models.User, error)
+	GetUserByEmail(email string) (*models.User, error)
 }
 
-func (db *PostgreSQL) CreateUser(newUser *User) (int, error) {
+func (db *PostgreSQL) CreateUser(newUser *models.User) (int, error) {
 	err := db.DB.Create(newUser).Error
 	if err != nil {
 		return 0, fmt.Errorf("failed to create user: %w", err)
@@ -20,8 +21,8 @@ func (db *PostgreSQL) CreateUser(newUser *User) (int, error) {
 	return int(newUser.ID), nil
 }
 
-func (db *PostgreSQL) GetUserByID(id int) (*User, error) {
-	user := &User{}
+func (db *PostgreSQL) GetUserByID(id int) (*models.User, error) {
+	user := &models.User{}
 	err := db.DB.First(user, id).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {
@@ -32,8 +33,8 @@ func (db *PostgreSQL) GetUserByID(id int) (*User, error) {
 	return user, nil
 }
 
-func (db *PostgreSQL) GetUserByEmail(email string) (*User, error) {
-	user := &User{}
+func (db *PostgreSQL) GetUserByEmail(email string) (*models.User, error) {
+	user := &models.User{}
 	err := db.DB.Where("email_id = ?", email).First(user).Error
 	if err != nil {
 		if err == gorm.ErrRecordNotFound {

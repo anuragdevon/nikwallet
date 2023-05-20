@@ -2,7 +2,7 @@
 #-- Create the custom domain for currency
 # CREATE DOMAIN currency_enum AS TEXT CHECK (VALUE IN ('USD', 'EUR', 'INR'));
 
-DB_NAME="testdb1"
+DB_NAME="testdb"
 
 psql -U postgres -d ${DB_NAME} << EOF
 DROP TABLE IF EXISTS wallets;

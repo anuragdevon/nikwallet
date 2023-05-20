@@ -1,7 +1,8 @@
-package database
+package repository
 
 import (
-	"nikwallet/database/money"
+	"nikwallet/repository/models"
+	"nikwallet/repository/money"
 	"reflect"
 	"testing"
 
@@ -10,7 +11,7 @@ import (
 
 func TestWallet(t *testing.T) {
 	t.Run("CreateWallet method to create a valid wallet for successful user creation", func(t *testing.T) {
-		newUser := &User{
+		newUser := &models.User{
 			EmailID:  "testwallet511@example.com",
 			Password: "test123",
 		}
@@ -27,7 +28,7 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("GetWalletByUserID method to return valid Wallet for valid userID", func(t *testing.T) {
-		newUser := &User{
+		newUser := &models.User{
 			EmailID:  "testw111@example.com",
 			Password: "test123",
 		}
@@ -59,7 +60,7 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("AddMoneyToWallet method to add money to empty wallet", func(t *testing.T) {
-		newUser := &User{
+		newUser := &models.User{
 			EmailID:  "testw13@example.com",
 			Password: "test123",
 		}
@@ -82,7 +83,7 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("AddMoneyToWallet method to add money to non empty wallet", func(t *testing.T) {
-		newUser := &User{
+		newUser := &models.User{
 			EmailID:  "testw15@example.com",
 			Password: "test123",
 		}
@@ -111,7 +112,7 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("WithdrawMoneyFromWallet method to successfully return withdrawn money for valid input", func(t *testing.T) {
-		newUser := &User{
+		newUser := &models.User{
 			EmailID:  "testw17s@example.com",
 			Password: "test123",
 		}
@@ -147,7 +148,7 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("WithdrawMoneyFromWallet to return error for not enough money in wallet", func(t *testing.T) {
-		newUser := &User{
+		newUser := &models.User{
 			EmailID:  "testw16s@example.com",
 			Password: "test123",
 		}
@@ -171,14 +172,14 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("TrasferMoney method to successfully transfer money from sender to reiever having same currency", func(t *testing.T) {
-		sender := &User{
+		sender := &models.User{
 			EmailID:  "test_sender@example.com",
 			Password: "test123",
 		}
 		senderID, _ := db.CreateUser(sender)
 		_, _ = db.CreateWallet(senderID, money.EUR)
 
-		recipient := &User{
+		recipient := &models.User{
 			EmailID:  "test_recipient@example.com",
 			Password: "test123",
 		}
@@ -209,14 +210,14 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("TransferMoney method to successfully transfer money from sender to receiver having different currencies", func(t *testing.T) {
-		sender := &User{
+		sender := &models.User{
 			EmailID:  "test_sender222@example.com",
 			Password: "test123",
 		}
 		senderID, _ := db.CreateUser(sender)
 		_, _ = db.CreateWallet(senderID, money.EUR)
 
-		recipient := &User{
+		recipient := &models.User{
 			EmailID:  "test_recipient322@example.com",
 			Password: "test123",
 		}
@@ -237,7 +238,6 @@ func TestWallet(t *testing.T) {
 		if !senderWallet.Money.Equals(*expectedSenderMoney) {
 			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, expectedSenderMoney)
 		}
-		
 
 		expectedRecipientMoney, _ := money.NewMoney(decimal.NewFromFloat(45.83), money.USD)
 		recipientWallet, _ := db.GetWalletByUserID(recipientID)
@@ -247,7 +247,7 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("TransferMoney method to successfully transfer money from sender to receiver having different currencies", func(t *testing.T) {
-		sender := &User{
+		sender := &models.User{
 			EmailID:  "test_sender333@example.com",
 			Password: "test123",
 		}
@@ -264,7 +264,7 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("TransferMoney method should return error for invalid sender ID", func(t *testing.T) {
-		recipient := &User{
+		recipient := &models.User{
 			EmailID:  "test_recipient@example.com",
 			Password: "test123",
 		}
@@ -280,7 +280,7 @@ func TestWallet(t *testing.T) {
 	})
 
 	t.Run("TransferMoney method should return error for invalid recipient emailID", func(t *testing.T) {
-		sender := &User{
+		sender := &models.User{
 			EmailID:  "test_sender@example.com",
 			Password: "test123",
 		}

@@ -2,15 +2,15 @@ package handlers_test
 
 import (
 	"log"
-	"nikwallet/database"
+	"nikwallet/repository"
 	"os"
 	"testing"
 )
 
-var db *database.PostgreSQL
+var db *repository.PostgreSQL
 
 func TestMain(m *testing.M) {
-	db = &database.PostgreSQL{}
+	db = &repository.PostgreSQL{}
 	err := db.Connect("testdb")
 	if err != nil {
 		log.Panic("failed to connect to database:", err)

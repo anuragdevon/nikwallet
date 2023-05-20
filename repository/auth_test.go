@@ -1,6 +1,7 @@
-package database
+package repository
 
 import (
+	"nikwallet/repository/models"
 	"testing"
 	"time"
 
@@ -13,7 +14,7 @@ func TestAuth(t *testing.T) {
 		email := "testw51@example.com"
 		password := "password"
 
-		newUser := &User{
+		newUser := &models.User{
 			EmailID:  "testw51@example.com",
 			Password: "password",
 		}
@@ -30,7 +31,7 @@ func TestAuth(t *testing.T) {
 
 	t.Run("Authenticate method to return error for invalid password", func(t *testing.T) {
 		email := "test331@example.com"
-		newUser := &User{
+		newUser := &models.User{
 			EmailID:  "testw51@example.com",
 			Password: "test123",
 		}
@@ -43,7 +44,7 @@ func TestAuth(t *testing.T) {
 	})
 	t.Run("Authenticate method to return error for invalid email", func(t *testing.T) {
 		password := "password"
-		newUser := &User{
+		newUser := &models.User{
 			EmailID:  "testw51@example.com",
 			Password: "test123",
 		}

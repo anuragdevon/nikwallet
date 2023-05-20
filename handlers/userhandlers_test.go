@@ -9,7 +9,8 @@ import (
 
 	"github.com/stretchr/testify/assert"
 
-	"nikwallet/database"
+	"nikwallet/repository"
+	"nikwallet/repository/models"
 	"nikwallet/handlers"
 	"nikwallet/services"
 )
@@ -47,7 +48,7 @@ func TestUserHandlers(t *testing.T) {
 	})
 
 	t.Run("SignupHandler to return 500 InternalServerError for duplicate user entry", func(t *testing.T) {
-		newUser := &database.User{
+		newUser := &models.User{
 			EmailID:  "nikwallethello@example.com",
 			Password: "password",
 		}

@@ -1,13 +1,14 @@
-package database
+package repository
 
 import (
 	"fmt"
+	"nikwallet/repository/models"
 	"testing"
 )
 
 func TestUser(t *testing.T) {
 	t.Run("CreateUser method to successfully create user with valid data", func(t *testing.T) {
-		user := &User{
+		user := &models.User{
 			EmailID:  "test@example.com",
 			Password: "test123",
 		}
@@ -22,7 +23,7 @@ func TestUser(t *testing.T) {
 	})
 
 	t.Run("CreateUser method to return error for duplicate emailID", func(t *testing.T) {
-		user := &User{
+		user := &models.User{
 			EmailID:  "anuragkar1@gmail.com",
 			Password: "password123",
 		}
@@ -32,7 +33,7 @@ func TestUser(t *testing.T) {
 			t.Fatalf("Failed to create user: %v", err)
 		}
 
-		duplicateUser := &User{
+		duplicateUser := &models.User{
 			EmailID:  "anuragkar1@gmail.com",
 			Password: "password456",
 		}
@@ -44,7 +45,7 @@ func TestUser(t *testing.T) {
 	})
 
 	t.Run("GetUserByID method to return valid user for valid userID", func(t *testing.T) {
-		user := &User{
+		user := &models.User{
 			EmailID:  "test4@example.com",
 			Password: "test123",
 		}
@@ -66,7 +67,7 @@ func TestUser(t *testing.T) {
 	t.Run("GetUserByEmail method to return valid user for valid emailID", func(t *testing.T) {
 		userEmail := "testuser99@example.com"
 		userPassword := "password123"
-		userID, err := db.CreateUser(&User{EmailID: userEmail, Password: userPassword})
+		userID, err := db.CreateUser(&models.User{EmailID: userEmail, Password: userPassword})
 		if err != nil {
 			t.Fatalf("failed to create test user: %v", err)
 		}

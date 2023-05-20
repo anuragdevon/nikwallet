@@ -1,33 +1,26 @@
-package database
+package repository
 
 import (
 	"fmt"
 	"time"
 
-	"nikwallet/database/money"
+	"nikwallet/repository/models"
+	"nikwallet/repository/money"
 )
 
-type Wallet struct {
-	ID        int          `gorm:"column:id"`
-	UserID    int          `gorm:"column:user_id"`
-	Money     *money.Money `gorm:"column:amount"`
-	CreatedAt time.Time    `gorm:"column:created_at"`
-	UpdatedAt time.Time    `gorm:"column:updated_at"`
-}
-
-func (db *PostgreSQL) CreateWallet(userID int, currency money.Currency) (*Wallet, error) {
+func (db *PostgreSQL) CreateWallet(userID int, currency money.Currency) (*models.Wallet, error) {
 	_, err := db.GetUserByID(userID)
 	if err != nil {
 		return nil, err
 	}
 	initialZeroMoney, _ := money.NewMoney(money.ZeroAmountValue, currency)
-	wallet := &Wallet{
+	wallet := &models.Wallet{
 		UserID:    userID,
 		Money:     initialZeroMoney,
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
- 
+
 	err = db.DB.Create(wallet).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to create wallet: %w", err)
@@ -35,8 +28,8 @@ func (db *PostgreSQL) CreateWallet(userID int, currency money.Currency) (*Wallet
 	return wallet, nil
 }
 
-func (db *PostgreSQL) GetWalletByUserID(userID int) (*Wallet, error) {
-	wallet := &Wallet{}
+func (db *PostgreSQL) GetWalletByUserID(userID int) (*models.Wallet, error) {
+	wallet := &models.Wallet{}
 	err := db.DB.Where("user_id = ?", userID).First(wallet).Error
 	if err != nil {
 		return nil, fmt.Errorf("no wallets found for user with ID %d", userID)

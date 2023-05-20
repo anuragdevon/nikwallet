@@ -10,9 +10,9 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 
-	"nikwallet/database"
-	"nikwallet/database/money"
 	"nikwallet/handlers"
+	"nikwallet/repository/models"
+	"nikwallet/repository/money"
 	"nikwallet/services"
 )
 
@@ -25,7 +25,7 @@ func TestWalletHandlers(t *testing.T) {
 	walletHandlers := handlers.NewWalletHandlers(walletService, authService, userService)
 
 	t.Run("CreateWalletHandler to return 201 StatusCreated for successfully create wallet", func(t *testing.T) {
-		newUser := &database.User{
+		newUser := &models.User{
 			EmailID:  "testw5111@example.com",
 			Password: "password",
 		}
@@ -54,13 +54,13 @@ func TestWalletHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusCreated, recorder.Code)
 
-		var wallet *database.Wallet
+		var wallet *models.Wallet
 		err = json.NewDecoder(recorder.Body).Decode(&wallet)
 		assert.NoError(t, err)
 	})
 
 	t.Run("AddMoneyToWalletHandler to return 200 StatusOk for successfull add money to user's wallet", func(t *testing.T) {
-		newUser := &database.User{
+		newUser := &models.User{
 			EmailID:  "testw5112@example.com",
 			Password: "password",
 		}
@@ -104,7 +104,7 @@ func TestWalletHandlers(t *testing.T) {
 	})
 
 	t.Run("AddMoneyToWalletHandler to return status 400 bad request for InvalidAmount", func(t *testing.T) {
-		newUser := &database.User{
+		newUser := &models.User{
 			EmailID:  "testw599@example.com",
 			Password: "password",
 		}
@@ -143,7 +143,7 @@ func TestWalletHandlers(t *testing.T) {
 	})
 
 	t.Run("WithdrawMoneyFromWalletHandler to return 200 StatusOk for successfull withdraw money from user's wallet", func(t *testing.T) {
-		newUser := &database.User{
+		newUser := &models.User{
 			EmailID:  "testw5113@example.com",
 			Password: "password",
 		}
@@ -177,7 +177,7 @@ func TestWalletHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, recorder.Code)
 
-		var wallet *database.Wallet
+		var wallet *models.Wallet
 		err = json.NewDecoder(recorder.Body).Decode(&wallet)
 		assert.NoError(t, err)
 
@@ -189,7 +189,7 @@ func TestWalletHandlers(t *testing.T) {
 	})
 
 	t.Run("WithdrawMoneyFromWalletHandler to return status 400 bad request for InsufficientFunds", func(t *testing.T) {
-		newUser := &database.User{
+		newUser := &models.User{
 			EmailID:  "testw5114@example.com",
 			Password: "password",
 		}
@@ -228,7 +228,7 @@ func TestWalletHandlers(t *testing.T) {
 	})
 
 	t.Run("WithdrawMoneyFromWalletHandler to return status 400 BadRequest for InvalidAmount", func(t *testing.T) {
-		newUser := &database.User{
+		newUser := &models.User{
 			EmailID:  "testw5115@example.com",
 			Password: "password",
 		}
@@ -267,14 +267,14 @@ func TestWalletHandlers(t *testing.T) {
 	})
 
 	t.Run("TransferMoneyHandler to return 200 StatusOk for successful transfer of money from sender to reciever having same currency", func(t *testing.T) {
-		sender := &database.User{
+		sender := &models.User{
 			EmailID:  "sender@example.com",
 			Password: "test123",
 		}
 		senderID, _ := userService.CreateUser(sender)
 		_, _ = walletService.CreateWallet(senderID, money.INR)
 
-		recipient := &database.User{
+		recipient := &models.User{
 			EmailID:  "recipient@example.com",
 			Password: "test123",
 		}
@@ -323,14 +323,14 @@ func TestWalletHandlers(t *testing.T) {
 	})
 
 	t.Run("TransferMoneyHandler to return 200 StatusOk for successful transfer of money from sender to reciever having different currency", func(t *testing.T) {
-		sender := &database.User{
+		sender := &models.User{
 			EmailID:  "senderUSA@example.com",
 			Password: "test123",
 		}
 		senderID, _ := userService.CreateUser(sender)
 		_, _ = walletService.CreateWallet(senderID, money.USD)
 
-		recipient := &database.User{
+		recipient := &models.User{
 			EmailID:  "recipientFrance@example.com",
 			Password: "test123",
 		}
@@ -378,7 +378,7 @@ func TestWalletHandlers(t *testing.T) {
 	})
 
 	t.Run("TransferMoneyHandler to return 500 InternalServerError for invalid recipient email", func(t *testing.T) {
-		sender := &database.User{
+		sender := &models.User{
 			EmailID:  "sender@example.com",
 			Password: "test123",
 		}
@@ -408,7 +408,7 @@ func TestWalletHandlers(t *testing.T) {
 	})
 
 	t.Run("TransferMoneyHandler to return 400 BadRequest for invalid payload", func(t *testing.T) {
-		sender := &database.User{
+		sender := &models.User{
 			EmailID:  "sender@example.com",
 			Password: "test123",
 		}
