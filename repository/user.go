@@ -7,12 +7,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserDB interface {
-	CreateUser(newUser *models.User) (int, error)
-	GetUserByID(id int) (*models.User, error)
-	GetUserByEmail(email string) (*models.User, error)
-}
-
 func (db *PostgreSQL) CreateUser(newUser *models.User) (int, error) {
 	err := db.DB.Create(newUser).Error
 	if err != nil {

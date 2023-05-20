@@ -1,8 +1,9 @@
 package services
 
 import (
-	"nikwallet/repository/models"
+	"fmt"
 	"nikwallet/repository"
+	"nikwallet/repository/models"
 
 	"gorm.io/gorm"
 )
@@ -17,6 +18,13 @@ func NewUserService(db *gorm.DB) *UserService {
 
 func (us *UserService) CreateUser(newUser *models.User) (int, error) {
 	db := repository.PostgreSQL{DB: us.db}
+
+	existingUser, _ := db.GetUserByEmail(newUser.EmailID)
+
+	if existingUser != nil {
+		return 0, fmt.Errorf("user already exists")
+	}
+
 	return db.CreateUser(newUser)
 }
 
