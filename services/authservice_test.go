@@ -1,4 +1,4 @@
-package repository
+package services
 
 import (
 	"nikwallet/repository/models"
@@ -10,6 +10,10 @@ import (
 )
 
 func TestAuth(t *testing.T) {
+	authService := &AuthService{
+		db: db.DB,
+	}
+
 	t.Run("Authenticate method to authenticate user with correct credentials", func(t *testing.T) {
 		email := "testw51@example.com"
 		password := "password"
@@ -21,11 +25,11 @@ func TestAuth(t *testing.T) {
 
 		_, _ = db.CreateUser(newUser)
 
-		token, err := db.AuthenticateUser(email, password)
+		token, err := authService.AuthenticateUser(email, password)
 		assert.Nil(t, err)
 		assert.NotNil(t, token)
 
-		_, _, err = db.VerifyToken(token)
+		_, _, err = authService.VerifyToken(token)
 		assert.Nil(t, err)
 	})
 
@@ -38,7 +42,7 @@ func TestAuth(t *testing.T) {
 
 		_, _ = db.CreateUser(newUser)
 
-		token, err := db.AuthenticateUser(email, "wrong_password")
+		token, err := authService.AuthenticateUser(email, "wrong_password")
 		assert.NotNil(t, err)
 		assert.Equal(t, "", token)
 	})
@@ -51,7 +55,7 @@ func TestAuth(t *testing.T) {
 
 		_, _ = db.CreateUser(newUser)
 
-		token, err := db.AuthenticateUser("wrong_email", password)
+		token, err := authService.AuthenticateUser("wrong_email", password)
 		assert.NotNil(t, err)
 		assert.Equal(t, "", token)
 	})
@@ -66,7 +70,7 @@ func TestAuth(t *testing.T) {
 
 		tokenString, _ := token.SignedString(signingKey)
 
-		claims, userID, err := db.VerifyToken(tokenString)
+		claims, userID, err := authService.VerifyToken(tokenString)
 
 		assert.Nil(t, err)
 		assert.NotNil(t, claims)
@@ -84,7 +88,7 @@ func TestAuth(t *testing.T) {
 
 		tokenString, _ := token.SignedString(invalidKey)
 
-		claims, userID, err := db.VerifyToken(tokenString)
+		claims, userID, err := authService.VerifyToken(tokenString)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, claims)
@@ -101,7 +105,7 @@ func TestAuth(t *testing.T) {
 
 		tokenString, _ := token.SignedString(signingKey)
 
-		claims, userID, err := db.VerifyToken(tokenString)
+		claims, userID, err := authService.VerifyToken(tokenString)
 
 		assert.NotNil(t, err)
 		assert.Nil(t, claims)
