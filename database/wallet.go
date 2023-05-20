@@ -2,20 +2,17 @@ package database
 
 import (
 	"fmt"
-	"strconv"
 	"time"
 
 	"nikwallet/database/money"
-
-	"github.com/shopspring/decimal"
 )
 
 type Wallet struct {
-	ID        int
-	UserID    int
-	Money     *money.Money
-	CreatedAt time.Time
-	UpdatedAt time.Time
+	ID        int          `gorm:"column:id"`
+	UserID    int          `gorm:"column:user_id"`
+	Money     *money.Money `gorm:"column:amount"`
+	CreatedAt time.Time    `gorm:"column:created_at"`
+	UpdatedAt time.Time    `gorm:"column:updated_at"`
 }
 
 func (db *PostgreSQL) CreateWallet(userID int, currency money.Currency) (*Wallet, error) {
@@ -30,14 +27,8 @@ func (db *PostgreSQL) CreateWallet(userID int, currency money.Currency) (*Wallet
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
-
-	query := `INSERT INTO wallet(user_id, amount, currency, created_at, updated_at)
-	VALUES($1, $2, $3, $4, $5)
-	RETURNING id`
-
-	err = db.DB.QueryRow(query, wallet.UserID, wallet.Money.Amount.String(), string(currency), wallet.CreatedAt, wallet.UpdatedAt).
-		Scan(&wallet.ID)
-
+ 
+	err = db.DB.Create(wallet).Error
 	if err != nil {
 		return nil, fmt.Errorf("failed to create wallet: %w", err)
 	}
@@ -45,24 +36,11 @@ func (db *PostgreSQL) CreateWallet(userID int, currency money.Currency) (*Wallet
 }
 
 func (db *PostgreSQL) GetWalletByUserID(userID int) (*Wallet, error) {
-	query := `SELECT id, user_id, amount::numeric::text, currency, created_at, updated_at FROM wallet WHERE user_id = $1`
-	row := db.DB.QueryRow(query, userID)
-
 	wallet := &Wallet{}
-
-	var amountStr string
-	var currencyStr string
-
-	err := row.Scan(&wallet.ID, &wallet.UserID, &amountStr, &currencyStr, &wallet.CreatedAt, &wallet.UpdatedAt)
+	err := db.DB.Where("user_id = ?", userID).First(wallet).Error
 	if err != nil {
 		return nil, fmt.Errorf("no wallets found for user with ID %d", userID)
 	}
-
-	amount, err := strconv.ParseFloat(amountStr, 64)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse amount: %w", err)
-	}
-	wallet.Money, _ = money.NewMoney(decimal.NewFromFloat(amount), money.Currency(currencyStr))
 
 	return wallet, nil
 }
@@ -78,8 +56,8 @@ func (db *PostgreSQL) AddMoneyToWallet(userID int, moneyToAdd money.Money) error
 		return err
 	}
 
-	query := `UPDATE wallet SET amount=$1, updated_at=$2 WHERE id=$3`
-	_, err = db.DB.Exec(query, newMoney.Amount.String(), time.Now(), wallet.ID)
+	wallet.Money = newMoney
+	err = db.DB.Save(wallet).Error
 	if err != nil {
 		return fmt.Errorf("failed to add money to wallet: %w", err)
 	}
@@ -98,8 +76,8 @@ func (db *PostgreSQL) WithdrawMoneyFromWallet(userID int, moneyToWithdraw money.
 		return money.Money{}, err
 	}
 
-	query := `UPDATE wallet SET amount=$1, updated_at=$2 WHERE id=$3`
-	_, err = db.DB.Exec(query, remainedMoney.Amount.String(), time.Now(), wallet.ID)
+	wallet.Money = remainedMoney
+	err = db.DB.Save(wallet).Error
 	if err != nil {
 		return money.Money{}, fmt.Errorf("failed to withdraw money from wallet: %w", err)
 	}
@@ -108,13 +86,12 @@ func (db *PostgreSQL) WithdrawMoneyFromWallet(userID int, moneyToWithdraw money.
 }
 
 func (db *PostgreSQL) TransferMoney(senderWalletID int, recipientEmail string, moneyToTransfer money.Money) error {
-
 	recipient, err := db.GetUserByEmail(recipientEmail)
 	if err != nil {
 		return err
 	}
 
-	recipientWallet, err := db.GetWalletByUserID(recipient.ID)
+	recipientWallet, err := db.GetWalletByUserID(int(recipient.ID))
 	if err != nil {
 		return err
 	}

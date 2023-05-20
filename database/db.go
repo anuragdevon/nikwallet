@@ -1,26 +1,31 @@
 package database
 
 import (
-	"database/sql"
 	"fmt"
 
-	_ "github.com/lib/pq"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 type PostgreSQL struct {
-	DB *sql.DB
+	DB *gorm.DB
 }
 
-func (postgres *PostgreSQL) Connect(dbName string) error {
+func (p *PostgreSQL) Connect(dbName string) error {
 	dsn := fmt.Sprintf("user=postgres password=postgres dbname=%s sslmode=disable", dbName)
 	var err error
-	postgres.DB, err = sql.Open("postgres", dsn)
+	p.DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return fmt.Errorf("failed to connect to database: %w", err)
 	}
 
-	if err := postgres.DB.Ping(); err != nil {
-		postgres.DB.Close()
+	sqlDB, err := p.DB.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get underlying SQL DB: %w", err)
+	}
+
+	if err := sqlDB.Ping(); err != nil {
+		sqlDB.Close()
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
@@ -28,5 +33,10 @@ func (postgres *PostgreSQL) Connect(dbName string) error {
 }
 
 func (p *PostgreSQL) Close() error {
-	return p.DB.Close()
+	sqlDB, err := p.DB.DB()
+	if err != nil {
+		return fmt.Errorf("failed to get underlying SQL DB: %w", err)
+	}
+
+	return sqlDB.Close()
 }

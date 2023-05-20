@@ -25,7 +25,7 @@ func (db *PostgreSQL) AuthenticateUser(email string, password string) (string, e
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, Claims{
-		UserID: user.ID,
+		UserID: int(user.ID),
 		StandardClaims: jwt.StandardClaims{
 			ExpiresAt: time.Now().Add(24 * time.Hour).Unix(),
 		},

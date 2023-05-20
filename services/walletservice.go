@@ -4,14 +4,14 @@ import (
 	"nikwallet/database"
 	"nikwallet/database/money"
 
-	"database/sql"
+	"gorm.io/gorm"
 )
 
 type WalletService struct {
-	db *sql.DB
+	db *gorm.DB
 }
 
-func NewWalletService(db *sql.DB) *WalletService {
+func NewWalletService(db *gorm.DB) *WalletService {
 	return &WalletService{db}
 }
 
