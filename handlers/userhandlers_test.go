@@ -42,7 +42,7 @@ func TestUserHandlers(t *testing.T) {
 		assert.NoError(t, err)
 
 		assert.Contains(t, responseBody, "user_id")
-		assert.Contains(t, responseBody, "token")
+		assert.Contains(t, responseBody, "id_token")
 	})
 
 	t.Run("SignupHandler to return 500 InternalServerError for duplicate user entry", func(t *testing.T) {
@@ -94,7 +94,7 @@ func TestUserHandlers(t *testing.T) {
 		err = json.NewDecoder(recorder.Body).Decode(&responseBody)
 		assert.NoError(t, err)
 
-		assert.Contains(t, responseBody, "token")
+		assert.Contains(t, responseBody, "id_token")
 	})
 
 	t.Run("SigninHandler to return status 401 Unauthorized for invalid user credentials", func(t *testing.T) {

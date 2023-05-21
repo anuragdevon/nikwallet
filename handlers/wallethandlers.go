@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"nikwallet/handlers/dto"
 	"nikwallet/repository/money"
 	"nikwallet/services"
 )
@@ -21,22 +22,12 @@ func NewWalletHandlers(walletService *services.WalletService, authService *servi
 	}
 }
 
-type Response struct {
-	Message string `json:"message,omitempty"`
-	Error   string `json:"error,omitempty"`
-}
-
-type MoneyTransfer struct {
-	Amount         *money.Money `json:"amount"`
-	RecipientEmail string       `json:"recipient_email"`
-}
-
 func (wh *WalletHandlers) CreateWalletHandler(respWriter http.ResponseWriter, req *http.Request) {
 	IDToken := req.Header.Get("id_token")
 	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
 		respWriter.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
+		json.NewEncoder(respWriter).Encode(dto.Response{Error: err.Error()})
 		return
 	}
 
@@ -52,7 +43,7 @@ func (wh *WalletHandlers) CreateWalletHandler(respWriter http.ResponseWriter, re
 	wallet, err := wh.walletService.CreateWallet(userID, payload.Currency)
 	if err != nil {
 		respWriter.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
+		json.NewEncoder(respWriter).Encode(dto.Response{Error: err.Error()})
 		return
 	}
 
@@ -65,7 +56,7 @@ func (wh *WalletHandlers) AddMoneyToWalletHandler(respWriter http.ResponseWriter
 	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
 		respWriter.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
+		json.NewEncoder(respWriter).Encode(dto.Response{Error: err.Error()})
 		return
 	}
 
@@ -77,12 +68,12 @@ func (wh *WalletHandlers) AddMoneyToWalletHandler(respWriter http.ResponseWriter
 
 	if err := wh.walletService.AddMoneyToWallet(userID, moneyToAdd); err != nil {
 		respWriter.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
+		json.NewEncoder(respWriter).Encode(dto.Response{Error: err.Error()})
 		return
 	}
 
 	respWriter.WriteHeader(http.StatusOK)
-	json.NewEncoder(respWriter).Encode(Response{Message: "money added to wallet successfully"})
+	json.NewEncoder(respWriter).Encode(dto.Response{Message: "money added to wallet successfully"})
 }
 
 func (wh *WalletHandlers) WithdrawMoneyFromWalletHandler(respWriter http.ResponseWriter, req *http.Request) {
@@ -90,7 +81,7 @@ func (wh *WalletHandlers) WithdrawMoneyFromWalletHandler(respWriter http.Respons
 	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
 		respWriter.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
+		json.NewEncoder(respWriter).Encode(dto.Response{Error: err.Error()})
 		return
 	}
 
@@ -115,11 +106,11 @@ func (wh *WalletHandlers) TransferMoneyHandler(respWriter http.ResponseWriter, r
 	_, userID, err := wh.authService.VerifyToken(IDToken)
 	if err != nil {
 		respWriter.WriteHeader(http.StatusUnauthorized)
-		json.NewEncoder(respWriter).Encode(Response{Error: err.Error()})
+		json.NewEncoder(respWriter).Encode(dto.Response{Error: err.Error()})
 		return
 	}
 
-	var transferPayload MoneyTransfer
+	var transferPayload dto.MoneyTransferDTO
 
 	if err := json.NewDecoder(req.Body).Decode(&transferPayload); err != nil {
 		http.Error(respWriter, "invalid payload", http.StatusBadRequest)
@@ -132,5 +123,5 @@ func (wh *WalletHandlers) TransferMoneyHandler(respWriter http.ResponseWriter, r
 	}
 
 	respWriter.WriteHeader(http.StatusOK)
-	json.NewEncoder(respWriter).Encode(Response{Message: "money transferred successfully"})
+	json.NewEncoder(respWriter).Encode(dto.Response{Message: "money transferred successfully"})
 }

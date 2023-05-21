@@ -10,6 +10,7 @@ import (
 	"github.com/shopspring/decimal"
 	"github.com/stretchr/testify/assert"
 
+	"nikwallet/handlers/dto"
 	"nikwallet/repository/models"
 	"nikwallet/repository/money"
 	"nikwallet/services"
@@ -88,7 +89,7 @@ func TestWalletHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, recorder.Code)
 
-		var response Response
+		var response dto.Response
 		err = json.NewDecoder(recorder.Body).Decode(&response)
 		assert.NoError(t, err)
 
@@ -136,7 +137,7 @@ func TestWalletHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
-		var response Response
+		var response dto.Response
 		err = json.NewDecoder(recorder.Body).Decode(&response)
 		assert.Error(t, err, "invalid amount")
 	})
@@ -221,7 +222,7 @@ func TestWalletHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
-		var response Response
+		var response dto.Response
 		err = json.NewDecoder(recorder.Body).Decode(&response)
 		assert.Error(t, err, "insufficient funds")
 	})
@@ -260,7 +261,7 @@ func TestWalletHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
-		var response Response
+		var response dto.Response
 		err = json.NewDecoder(recorder.Body).Decode(&response)
 		assert.Error(t, err, "invalid amount")
 	})
@@ -287,7 +288,7 @@ func TestWalletHandlers(t *testing.T) {
 
 		transferMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 
-		transferMoneyPayload := MoneyTransfer{
+		transferMoneyPayload := dto.MoneyTransferDTO{
 			Amount:         transferMoney,
 			RecipientEmail: recipient.EmailID,
 		}
@@ -302,7 +303,7 @@ func TestWalletHandlers(t *testing.T) {
 		http.HandlerFunc(walletHandlers.TransferMoneyHandler).ServeHTTP(recorder, req)
 
 		assert.Equal(t, http.StatusOK, recorder.Code)
-		var response Response
+		var response dto.Response
 		err := json.NewDecoder(recorder.Body).Decode(&response)
 		assert.NoError(t, err)
 		assert.Equal(t, "money transferred successfully", response.Message)
@@ -343,7 +344,7 @@ func TestWalletHandlers(t *testing.T) {
 
 		transferMoney, _ := money.NewMoney(decimal.NewFromFloat(2.0), money.USD)
 
-		transferMoneyPayload := MoneyTransfer{
+		transferMoneyPayload := dto.MoneyTransferDTO{
 			Amount:         transferMoney,
 			RecipientEmail: recipient.EmailID,
 		}
@@ -358,7 +359,7 @@ func TestWalletHandlers(t *testing.T) {
 		http.HandlerFunc(walletHandlers.TransferMoneyHandler).ServeHTTP(recorder, req)
 
 		assert.Equal(t, http.StatusOK, recorder.Code)
-		var response Response
+		var response dto.Response
 		err := json.NewDecoder(recorder.Body).Decode(&response)
 		assert.NoError(t, err)
 		assert.Equal(t, "money transferred successfully", response.Message)
@@ -387,7 +388,7 @@ func TestWalletHandlers(t *testing.T) {
 		invalidRecipientEmail := "invalidemail"
 		transferMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 
-		transferMoneyPayload := MoneyTransfer{
+		transferMoneyPayload := dto.MoneyTransferDTO{
 			Amount:         transferMoney,
 			RecipientEmail: invalidRecipientEmail,
 		}
@@ -427,7 +428,7 @@ func TestWalletHandlers(t *testing.T) {
 
 		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 
-		var response Response
+		var response dto.Response
 		err := json.NewDecoder(recorder.Body).Decode(&response)
 		assert.Error(t, err, "invalid amount")
 	})
