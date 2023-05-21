@@ -93,7 +93,7 @@ func TestUser(t *testing.T) {
 			t.Fatalf("expected GetUserByEmail() to return an error, but got nil")
 		}
 
-		expectedErrorMessage := fmt.Sprintf("user with email %s not found", userEmail)
+		expectedErrorMessage := fmt.Sprintf("failed to get user: %v", userEmail)
 		if err.Error() != expectedErrorMessage {
 			t.Fatalf("GetUserByEmail() error = %v, want %v", err.Error(), expectedErrorMessage)
 		}

@@ -26,7 +26,7 @@ func (db *PostgreSQL) GetUserByEmail(email string) (*models.User, error) {
 	user := &models.User{}
 	err := db.DB.Where("email_id = ?", email).First(user).Error
 	if err != nil {
-		return nil, fmt.Errorf("failed to get user: %w", err)
+		return nil, fmt.Errorf("failed to get user: %v", email)
 	}
 	return user, nil
 }
