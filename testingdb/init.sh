@@ -1,13 +1,11 @@
-#!/bin/bash
-
 DB_NAME="testdb"
 
-psql -U postgres -d "${DB_NAME}" <<EOF
+psql -U postgres -d ${DB_NAME} << EOF
 DROP TABLE IF EXISTS wallets;
 DROP TABLE IF EXISTS users;
 EOF
 
-psql -U postgres -d "${DB_NAME}" <<EOF
+psql -U postgres -d ${DB_NAME} << EOF
 
 CREATE TABLE users (
   id SERIAL PRIMARY KEY,
