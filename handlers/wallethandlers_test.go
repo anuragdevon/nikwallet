@@ -100,7 +100,6 @@ func TestWalletHandlers(t *testing.T) {
 		if !senderWallet.Money.Equals(*expectedAddedMoney) {
 			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, expectedAddedMoney)
 		}
-
 	})
 
 	t.Run("AddMoneyToWalletHandler to return status 400 bad request for InvalidAmount", func(t *testing.T) {
