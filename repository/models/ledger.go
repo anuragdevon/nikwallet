@@ -15,8 +15,8 @@ const (
 
 type Ledger struct {
 	ID              int          `gorm:"column:id"`
-	FromUserID      int          `gorm:"column:from_user_id"`
-	ToUserID        int          `gorm:"column:to_user_id"`
+	SenderUserID    int          `gorm:"column:sender_user_id"`
+	ReceiverUserID  int          `gorm:"column:receiver_user_id"`
 	Amount          *money.Money `gorm:"column:amount"`
 	TransactionType string       `gorm:"column:transaction_type"`
 	CreatedAt       time.Time    `gorm:"column:created_at"`

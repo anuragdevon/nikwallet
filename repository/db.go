@@ -3,6 +3,8 @@ package repository
 import (
 	"fmt"
 
+	"nikwallet/repository/models"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -29,6 +31,11 @@ func (p *PostgreSQL) Connect(dbName string) error {
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
+	err = p.DB.AutoMigrate(&models.User{}, &models.Wallet{}, &models.Ledger{})
+	if err != nil {
+		return fmt.Errorf("failed to auto migrate tables: %w", err)
+	}
+
 	return nil
 }
 
@@ -36,6 +43,15 @@ func (p *PostgreSQL) Close() error {
 	sqlDB, err := p.DB.DB()
 	if err != nil {
 		return fmt.Errorf("failed to get underlying SQL DB: %w", err)
+	}
+
+	err = p.DB.Migrator().DropTable(
+		&models.User{},
+		&models.Wallet{},
+		&models.Ledger{},
+	)
+	if err != nil {
+		return fmt.Errorf("failed to drop tables: %w", err)
 	}
 
 	return sqlDB.Close()
