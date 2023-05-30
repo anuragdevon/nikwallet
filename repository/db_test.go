@@ -1,13 +1,20 @@
 package repository
 
 import (
+	"log"
+	"nikwallet/config"
 	"testing"
 )
 
 func TestPostgreSQL(t *testing.T) {
+	c, err := config.LoadConfig()
+
+	if err != nil {
+		log.Fatalln("Failed at config", err)
+	}
 	t.Run("Connect to database successfully with valid dbname", func(t *testing.T) {
 		db := &PostgreSQL{}
-		err := db.Connect("testdb")
+		err := db.Connect(&c)
 		if err != nil {
 			t.Errorf("error connecting to database: %s", err)
 		}
@@ -20,7 +27,7 @@ func TestPostgreSQL(t *testing.T) {
 
 	t.Run("Close connection to db successfully", func(t *testing.T) {
 		db := &PostgreSQL{}
-		err := db.Connect("testdb")
+		err := db.Connect(&c)
 		if err != nil {
 			t.Errorf("error connecting to database: %s", err)
 		}
@@ -33,7 +40,7 @@ func TestPostgreSQL(t *testing.T) {
 
 	t.Run("Connect to database to return error with invalid dbName", func(t *testing.T) {
 		db := &PostgreSQL{}
-		err := db.Connect("invalid_db")
+		err := db.Connect(&config.Config{})
 		if err == nil {
 			t.Error("expected an error connecting to invalid database, but got nil")
 		}

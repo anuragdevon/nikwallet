@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 
+	"nikwallet/config"
 	"nikwallet/handlers"
 	"nikwallet/repository"
 	"nikwallet/routers"
@@ -12,8 +13,14 @@ import (
 )
 
 func StartServer() {
+	c, err := config.LoadConfig()
+
+	if err != nil {
+		log.Fatalln("Failed at config", err)
+	}
+
 	db := &repository.PostgreSQL{}
-	err := db.Connect("testdb")
+	err = db.Connect(&c)
 	if err != nil {
 		log.Panic("failed to connect to database:", err)
 	}

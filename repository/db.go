@@ -3,6 +3,7 @@ package repository
 import (
 	"fmt"
 
+	"nikwallet/config"
 	"nikwallet/repository/models"
 
 	"gorm.io/driver/postgres"
@@ -13,8 +14,8 @@ type PostgreSQL struct {
 	DB *gorm.DB
 }
 
-func (p *PostgreSQL) Connect(dbName string) error {
-	dsn := fmt.Sprintf("host=localhost port=5432 user=postgres password=postgres dbname=%s sslmode=disable", dbName)
+func (p *PostgreSQL) Connect(c *config.Config) error {
+	dsn := fmt.Sprintf("host=localhost port=5432 user=%s password=%s dbname=%s sslmode=disable", c.DbUser, c.DbPassword, c.DbName)
 	var err error
 	p.DB, err = gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {

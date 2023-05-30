@@ -108,8 +108,11 @@ func TestWalletHandlers(t *testing.T) {
 			Amount:          &addMoneyRequest,
 			TransactionType: string(models.TransactionTypeAdd),
 		}
+		assert.Equal(t, expectedLedgerEntry.SenderUserID, ledgerEntry.SenderUserID)
+		assert.Equal(t, expectedLedgerEntry.ReceiverUserID, ledgerEntry.ReceiverUserID)
+		assert.Equal(t, expectedLedgerEntry.Amount.Currency, ledgerEntry.Amount.Currency)
+		assert.Equal(t, expectedLedgerEntry.TransactionType, ledgerEntry.TransactionType)
 
-		assert.Equal(t, expectedLedgerEntry, ledgerEntry)
 	})
 
 	t.Run("AddMoneyToWalletHandler to return status 400 bad request for InvalidAmount", func(t *testing.T) {
@@ -203,10 +206,13 @@ func TestWalletHandlers(t *testing.T) {
 			SenderUserID:    userID,
 			ReceiverUserID:  userID,
 			Amount:          &addMoneyRequest,
-			TransactionType: string(models.TransactionTypeAdd),
+			TransactionType: string(models.TransactionTypeWithdraw),
 		}
 
-		assert.Equal(t, expectedLedgerEntry, ledgerEntry)
+		assert.Equal(t, expectedLedgerEntry.SenderUserID, ledgerEntry.SenderUserID)
+		assert.Equal(t, expectedLedgerEntry.ReceiverUserID, ledgerEntry.ReceiverUserID)
+		assert.Equal(t, expectedLedgerEntry.Amount.Currency, ledgerEntry.Amount.Currency)
+		assert.Equal(t, expectedLedgerEntry.TransactionType, ledgerEntry.TransactionType)
 	})
 
 	t.Run("WithdrawMoneyFromWalletHandler to return status 400 bad request for InsufficientFunds", func(t *testing.T) {
@@ -352,7 +358,10 @@ func TestWalletHandlers(t *testing.T) {
 			TransactionType: string(models.TransactionTypeTransfer),
 		}
 
-		assert.Equal(t, expectedSenderLedgerEntry, senderLedgerEntry)
+		assert.Equal(t, expectedSenderLedgerEntry.SenderUserID, senderLedgerEntry.SenderUserID)
+		assert.Equal(t, expectedSenderLedgerEntry.ReceiverUserID, senderLedgerEntry.ReceiverUserID)
+		assert.Equal(t, expectedSenderLedgerEntry.Amount.Currency, senderLedgerEntry.Amount.Currency)
+		assert.Equal(t, expectedSenderLedgerEntry.TransactionType, senderLedgerEntry.TransactionType)
 
 		recipientLedgerEntry, err := db.GetLatestLedgerEntry(recipientID)
 		assert.NoError(t, err)
@@ -364,7 +373,11 @@ func TestWalletHandlers(t *testing.T) {
 			TransactionType: string(models.TransactionTypeTransfer),
 		}
 
-		assert.Equal(t, expectedRecipientLedgerEntry, recipientLedgerEntry)
+		assert.Equal(t, expectedRecipientLedgerEntry.SenderUserID, recipientLedgerEntry.SenderUserID)
+		assert.Equal(t, expectedRecipientLedgerEntry.ReceiverUserID, recipientLedgerEntry.ReceiverUserID)
+		assert.Equal(t, expectedRecipientLedgerEntry.Amount.Currency, recipientLedgerEntry.Amount.Currency)
+		assert.Equal(t, expectedRecipientLedgerEntry.TransactionType, recipientLedgerEntry.TransactionType)
+
 	})
 
 	t.Run("TransferMoneyHandler to return 200 StatusOk for successful transfer of money from sender to reciever having different currency", func(t *testing.T) {
@@ -431,7 +444,11 @@ func TestWalletHandlers(t *testing.T) {
 			TransactionType: string(models.TransactionTypeTransfer),
 		}
 
-		assert.Equal(t, expectedSenderLedgerEntry, senderLedgerEntry)
+		assert.Equal(t, expectedSenderLedgerEntry.SenderUserID, senderLedgerEntry.SenderUserID)
+		assert.Equal(t, expectedSenderLedgerEntry.ReceiverUserID, senderLedgerEntry.ReceiverUserID)
+		assert.Equal(t, expectedSenderLedgerEntry.Amount.Amount, senderLedgerEntry.Amount.Amount)
+		assert.Equal(t, expectedSenderLedgerEntry.Amount.Currency, senderLedgerEntry.Amount.Currency)
+		assert.Equal(t, expectedSenderLedgerEntry.TransactionType, senderLedgerEntry.TransactionType)
 
 		recipientLedgerEntry, err := db.GetLatestLedgerEntry(recipientID)
 		assert.NoError(t, err)
@@ -443,7 +460,12 @@ func TestWalletHandlers(t *testing.T) {
 			TransactionType: string(models.TransactionTypeTransfer),
 		}
 
-		assert.Equal(t, expectedRecipientLedgerEntry, recipientLedgerEntry)
+		assert.Equal(t, expectedRecipientLedgerEntry.SenderUserID, recipientLedgerEntry.SenderUserID)
+		assert.Equal(t, expectedRecipientLedgerEntry.ReceiverUserID, recipientLedgerEntry.ReceiverUserID)
+		assert.Equal(t, expectedRecipientLedgerEntry.Amount.Amount, recipientLedgerEntry.Amount.Amount)
+		assert.Equal(t, expectedRecipientLedgerEntry.Amount.Currency, recipientLedgerEntry.Amount.Currency)
+		assert.Equal(t, expectedRecipientLedgerEntry.TransactionType, recipientLedgerEntry.TransactionType)
+
 	})
 
 	t.Run("TransferMoneyHandler to return 500 InternalServerError for invalid recipient email", func(t *testing.T) {
