@@ -149,3 +149,9 @@ func (ws *WalletService) TransferMoney(senderUserID int, recipientEmail string, 
 
 	return nil
 }
+
+
+func (ws *WalletService) GetLastNLedgerEntries(userID, limit int) ([]*models.Ledger, error) {
+	db := repository.PostgreSQL{DB: ws.db}
+	return db.GetLastNLedgerEntries(userID, limit)
+}

@@ -59,7 +59,7 @@ func TestWalletHandlers(t *testing.T) {
 		assert.NoError(t, err)
 	})
 
-	t.Run("AddMoneyToWalletHandler to return 200 StatusOk for successfull add money to user's wallet", func(t *testing.T) {
+	t.Run("AddMoneyToWalletHandler to return 200 StatusOk for successful add money to user's wallet", func(t *testing.T) {
 		newUser := &models.User{
 			EmailID:  "testw5112@example.com",
 			Password: "password",
@@ -92,7 +92,6 @@ func TestWalletHandlers(t *testing.T) {
 		var response dto.Response
 		err = json.NewDecoder(recorder.Body).Decode(&response)
 		assert.NoError(t, err)
-
 
 		expectedAddedMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 		senderWallet, _ := walletService.GetWalletByUserID(userID)
@@ -501,5 +500,85 @@ func TestWalletHandlers(t *testing.T) {
 		var response dto.Response
 		err := json.NewDecoder(recorder.Body).Decode(&response)
 		assert.Error(t, err, "invalid amount")
+	})
+
+	t.Run("GetWalletHistoryHandler to return 200 StatusOk and history of wallet for valid query params", func(t *testing.T) {
+		newUser := &models.User{
+			EmailID:  "testwallethistory@example.com",
+			Password: "password",
+		}
+
+		userID, err := userService.CreateUser(newUser)
+		assert.NoError(t, err)
+
+		IDToken, err := authService.AuthenticateUser(newUser.EmailID, newUser.Password)
+		assert.NoError(t, err)
+
+		_, err = walletService.CreateWallet(userID, money.INR)
+		assert.NoError(t, err)
+
+		mockLedgerEntries := []*models.Ledger{
+			{
+				SenderUserID:    userID,
+				ReceiverUserID:  userID,
+				Amount:          &money.Money{Amount: decimal.NewFromFloat(50.0), Currency: money.INR},
+				TransactionType: string(models.TransactionTypeAdd),
+			},
+			{
+				SenderUserID:    userID,
+				ReceiverUserID:  userID,
+				Amount:          &money.Money{Amount: decimal.NewFromFloat(100.0), Currency: money.INR},
+				TransactionType: string(models.TransactionTypeAdd),
+			},
+		}
+
+		for _, entry := range mockLedgerEntries {
+			err := db.CreateLedgerEntry(entry)
+			assert.NoError(t, err)
+		}
+
+		url := "/wallet/history?limit=2"
+		req, err := http.NewRequest("GET", url, nil)
+		req.Header.Set("id_token", IDToken)
+		assert.NoError(t, err)
+
+		recorder := httptest.NewRecorder()
+
+		http.HandlerFunc(walletHandlers.GetWalletHistoryHandler).ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusOK, recorder.Code)
+
+		var response []*models.Ledger
+		err = json.NewDecoder(recorder.Body).Decode(&response)
+		assert.NoError(t, err)
+
+		assert.Len(t, response, 2)
+	})
+
+	t.Run("GetWalletHistoryHandler to return 400 BadRequest invalid query params", func(t *testing.T) {
+		newUser := &models.User{
+			EmailID:  "testgethistorybadrequest@example.com",
+			Password: "password",
+		}
+
+		userID, err := userService.CreateUser(newUser)
+		assert.NoError(t, err)
+
+		IDToken, err := authService.AuthenticateUser(newUser.EmailID, newUser.Password)
+		assert.NoError(t, err)
+
+		_, err = walletService.CreateWallet(userID, money.INR)
+		assert.NoError(t, err)
+
+		url := "/wallet/history"
+		req, err := http.NewRequest("GET", url, nil)
+		req.Header.Set("id_token", IDToken)
+		assert.NoError(t, err)
+
+		recorder := httptest.NewRecorder()
+
+		http.HandlerFunc(walletHandlers.GetWalletHistoryHandler).ServeHTTP(recorder, req)
+
+		assert.Equal(t, http.StatusBadRequest, recorder.Code)
 	})
 }

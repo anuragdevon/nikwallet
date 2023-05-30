@@ -15,6 +15,7 @@ func NewWalletRouter(handlers *handlers.WalletHandlers) *mux.Router {
 	router.HandleFunc("/", handlers.AddMoneyToWalletHandler).Methods(http.MethodPut)
 	router.HandleFunc("/withdraw", handlers.WithdrawMoneyFromWalletHandler).Methods(http.MethodPut)
 	router.HandleFunc("/transfer", handlers.WithdrawMoneyFromWalletHandler).Methods(http.MethodPut)
+	router.HandleFunc("/history", handlers.GetWalletHistoryHandler).Methods(http.MethodGet)
 
 	return router
 }

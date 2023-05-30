@@ -6,6 +6,7 @@ import (
 	"nikwallet/handlers/dto"
 	"nikwallet/repository/money"
 	"nikwallet/services"
+	"strconv"
 )
 
 type WalletHandlers struct {
@@ -124,4 +125,30 @@ func (wh *WalletHandlers) TransferMoneyHandler(respWriter http.ResponseWriter, r
 
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(dto.Response{Message: "money transferred successfully"})
+}
+
+func (wh *WalletHandlers) GetWalletHistoryHandler(respWriter http.ResponseWriter, req *http.Request) {
+	IDToken := req.Header.Get("id_token")
+	_, userID, err := wh.authService.VerifyToken(IDToken)
+	if err != nil {
+		respWriter.WriteHeader(http.StatusUnauthorized)
+		json.NewEncoder(respWriter).Encode(dto.Response{Error: err.Error()})
+		return
+	}
+
+	limitStr := req.URL.Query().Get("limit")
+	limit, err := strconv.Atoi(limitStr)
+	if err != nil {
+		http.Error(respWriter, "invalid limit parameter", http.StatusBadRequest)
+		return
+	}
+	ledgerEntries, err := wh.walletService.GetLastNLedgerEntries(userID, limit)
+	if err != nil {
+		respWriter.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(respWriter).Encode(dto.Response{Error: err.Error()})
+		return
+	}
+
+	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(ledgerEntries)
 }
