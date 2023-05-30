@@ -100,6 +100,18 @@ func TestWalletHandlers(t *testing.T) {
 		if !senderWallet.Money.Equals(*expectedAddedMoney) {
 			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, expectedAddedMoney)
 		}
+
+		ledgerEntry, err := db.GetLatestLedgerEntry(userID)
+		assert.NoError(t, err)
+
+		expectedLedgerEntry := models.Ledger{
+			SenderUserID:    userID,
+			ReceiverUserID:  userID,
+			Amount:          &addMoneyRequest,
+			TransactionType: string(models.TransactionTypeAdd),
+		}
+
+		assert.Equal(t, expectedLedgerEntry, ledgerEntry)
 	})
 
 	t.Run("AddMoneyToWalletHandler to return status 400 bad request for InvalidAmount", func(t *testing.T) {
@@ -185,6 +197,18 @@ func TestWalletHandlers(t *testing.T) {
 		if !senderWallet.Money.Equals(*expectedRemainedMoney) {
 			t.Errorf("AddMoneyToWallet() got = %v, want = %v", senderWallet.Money, expectedRemainedMoney)
 		}
+
+		ledgerEntry, err := db.GetLatestLedgerEntry(userID)
+		assert.NoError(t, err)
+
+		expectedLedgerEntry := models.Ledger{
+			SenderUserID:    userID,
+			ReceiverUserID:  userID,
+			Amount:          &addMoneyRequest,
+			TransactionType: string(models.TransactionTypeAdd),
+		}
+
+		assert.Equal(t, expectedLedgerEntry, ledgerEntry)
 	})
 
 	t.Run("WithdrawMoneyFromWalletHandler to return status 400 bad request for InsufficientFunds", func(t *testing.T) {
@@ -319,6 +343,30 @@ func TestWalletHandlers(t *testing.T) {
 		if !recipientWallet.Money.Equals(*expectedRecipientMoney) {
 			t.Errorf("AddMoneyToWallet() got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
 		}
+
+		senderLedgerEntry, err := db.GetLatestLedgerEntry(senderID)
+		assert.NoError(t, err)
+
+		expectedSenderLedgerEntry := models.Ledger{
+			SenderUserID:    senderID,
+			ReceiverUserID:  recipientID,
+			Amount:          transferMoney,
+			TransactionType: string(models.TransactionTypeTransfer),
+		}
+
+		assert.Equal(t, expectedSenderLedgerEntry, senderLedgerEntry)
+
+		recipientLedgerEntry, err := db.GetLatestLedgerEntry(recipientID)
+		assert.NoError(t, err)
+
+		expectedRecipientLedgerEntry := models.Ledger{
+			SenderUserID:    senderID,
+			ReceiverUserID:  recipientID,
+			Amount:          transferMoney,
+			TransactionType: string(models.TransactionTypeTransfer),
+		}
+
+		assert.Equal(t, expectedRecipientLedgerEntry, recipientLedgerEntry)
 	})
 
 	t.Run("TransferMoneyHandler to return 200 StatusOk for successful transfer of money from sender to reciever having different currency", func(t *testing.T) {
@@ -374,6 +422,30 @@ func TestWalletHandlers(t *testing.T) {
 		if !recipientWallet.Money.Equals(*expectedRecipientMoney) {
 			t.Errorf("AddMoneyToWallet() got = %v, want = %v", recipientWallet.Money, expectedRecipientMoney)
 		}
+
+		senderLedgerEntry, err := db.GetLatestLedgerEntry(senderID)
+		assert.NoError(t, err)
+
+		expectedSenderLedgerEntry := models.Ledger{
+			SenderUserID:    senderID,
+			ReceiverUserID:  recipientID,
+			Amount:          transferMoney,
+			TransactionType: string(models.TransactionTypeTransfer),
+		}
+
+		assert.Equal(t, expectedSenderLedgerEntry, senderLedgerEntry)
+
+		recipientLedgerEntry, err := db.GetLatestLedgerEntry(recipientID)
+		assert.NoError(t, err)
+
+		expectedRecipientLedgerEntry := models.Ledger{
+			SenderUserID:    senderID,
+			ReceiverUserID:  recipientID,
+			Amount:          transferMoney,
+			TransactionType: string(models.TransactionTypeTransfer),
+		}
+
+		assert.Equal(t, expectedRecipientLedgerEntry, recipientLedgerEntry)
 	})
 
 	t.Run("TransferMoneyHandler to return 500 InternalServerError for invalid recipient email", func(t *testing.T) {
