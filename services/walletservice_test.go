@@ -74,7 +74,7 @@ func TestWalletService(t *testing.T) {
 
 		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.USD)
 
-		err := walletService.AddMoneyToWallet(newUserID, *initialMoney)
+		_, err := walletService.AddMoneyToWallet(newUserID, *initialMoney)
 		assert.NoError(t, err)
 
 		updatedWallet, _ := db.GetWalletByUserID(newUserID)
@@ -99,11 +99,11 @@ func TestWalletService(t *testing.T) {
 		_, _ = walletService.CreateWallet(newUserID, money.EUR)
 
 		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.EUR)
-		err := walletService.AddMoneyToWallet(newUserID, *initialMoney)
+		_, err := walletService.AddMoneyToWallet(newUserID, *initialMoney)
 		assert.Nil(t, err, "AddMoneyToWallet should not return an error")
 
 		additionalMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
-		err = walletService.AddMoneyToWallet(newUserID, *additionalMoney)
+		_, err = walletService.AddMoneyToWallet(newUserID, *additionalMoney)
 		assert.Nil(t, err, "AddMoneyToWallet should not return an error")
 
 		updatedWallet, _ := db.GetWalletByUserID(newUserID)
@@ -130,7 +130,7 @@ func TestWalletService(t *testing.T) {
 
 		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.INR)
 
-		err := walletService.AddMoneyToWallet(newUserID, *initialMoney)
+		_, err := walletService.AddMoneyToWallet(newUserID, *initialMoney)
 		assert.Nil(t, err, "AddMoneyToWallet should not return an error")
 
 		withdrawMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
@@ -163,7 +163,7 @@ func TestWalletService(t *testing.T) {
 
 		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.USD)
 
-		err := walletService.AddMoneyToWallet(newUserID, *initialMoney)
+		_, err := walletService.AddMoneyToWallet(newUserID, *initialMoney)
 		assert.Nil(t, err, "AddMoneyToWallet should not return an error")
 
 		withdrawMoney, _ := money.NewMoney(decimal.NewFromFloat(150.0), money.USD)
@@ -194,7 +194,7 @@ func TestWalletService(t *testing.T) {
 		_, _ = walletService.CreateWallet(recipientID, money.EUR)
 
 		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.EUR)
-		_ = walletService.AddMoneyToWallet(senderID, *initialMoney)
+		walletService.AddMoneyToWallet(senderID, *initialMoney)
 
 		transferAmount, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
 		err := walletService.TransferMoney(senderID, recipient.EmailID, *transferAmount)
@@ -239,7 +239,7 @@ func TestWalletService(t *testing.T) {
 		_, _ = walletService.CreateWallet(recipientID, money.USD)
 
 		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.EUR)
-		_ = walletService.AddMoneyToWallet(senderID, *initialMoney)
+		walletService.AddMoneyToWallet(senderID, *initialMoney)
 
 		transferAmount, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.EUR)
 		err := walletService.TransferMoney(senderID, recipient.EmailID, *transferAmount)
@@ -314,10 +314,10 @@ func TestWalletService(t *testing.T) {
 			Password: "test123",
 		}
 		senderID, _ := db.CreateUser(sender)
-		_, _ = walletService.CreateWallet(senderID, money.INR)
+		walletService.CreateWallet(senderID, money.INR)
 
 		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.INR)
-		_ = walletService.AddMoneyToWallet(senderID, *initialMoney)
+		walletService.AddMoneyToWallet(senderID, *initialMoney)
 
 		transferAmount, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 		err := walletService.TransferMoney(senderID, "invalid_recipient@example.com", *transferAmount)

@@ -39,24 +39,24 @@ func (ws *WalletService) GetWalletByUserID(userID int) (*models.Wallet, error) {
 	return db.GetWalletByUserID(userID)
 }
 
-func (ws *WalletService) AddMoneyToWallet(userID int, moneyToAdd money.Money) error {
+func (ws *WalletService) AddMoneyToWallet(userID int, moneyToAdd money.Money) (*models.Wallet, error) {
 	db := repository.PostgreSQL{DB: ws.db}
 
 	wallet, err := db.GetWalletByUserID(userID)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	newMoney, err := wallet.Money.Add(&moneyToAdd)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	wallet.Money = newMoney
 
-	err = db.UpdateWallet(wallet)
+	updatedWallet, err := db.UpdateWallet(wallet)
 	if err != nil {
-		return fmt.Errorf("failed to add money")
+		return nil, fmt.Errorf("failed to add money")
 	}
 
 	ledgerEntry := &models.Ledger{
@@ -69,9 +69,9 @@ func (ws *WalletService) AddMoneyToWallet(userID int, moneyToAdd money.Money) er
 
 	err = db.CreateLedgerEntry(ledgerEntry)
 	if err != nil {
-		return fmt.Errorf("failed to create ledger entry")
+		return updatedWallet, fmt.Errorf("failed to create ledger entry")
 	}
-	return nil
+	return updatedWallet, nil
 }
 
 func (ws *WalletService) WithdrawMoneyFromWallet(userID int, moneyToWithdraw money.Money) (money.Money, error) {
@@ -87,7 +87,7 @@ func (ws *WalletService) WithdrawMoneyFromWallet(userID int, moneyToWithdraw mon
 	}
 
 	wallet.Money = remainedMoney
-	err = db.UpdateWallet(wallet)
+	_, err = db.UpdateWallet(wallet)
 	if err != nil {
 		return money.Money{}, fmt.Errorf("failed to withdraw money")
 	}
@@ -128,9 +128,9 @@ func (ws *WalletService) TransferMoney(senderUserID int, recipientEmail string, 
 		return err
 	}
 
-	err = walletService.AddMoneyToWallet(recipientWallet.UserID, amountDeducted)
+	_, err = walletService.AddMoneyToWallet(recipientWallet.UserID, amountDeducted)
 	if err != nil {
-		_ = walletService.AddMoneyToWallet(senderUserID, amountDeducted)
+		_, _ = walletService.AddMoneyToWallet(senderUserID, amountDeducted)
 		return err
 	}
 

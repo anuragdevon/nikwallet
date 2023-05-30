@@ -65,14 +65,15 @@ func (wh *WalletHandlers) AddMoneyToWalletHandler(respWriter http.ResponseWriter
 		http.Error(respWriter, "invalid amount", http.StatusBadRequest)
 		return
 	}
-
-	if err := wh.walletService.AddMoneyToWallet(userID, moneyToAdd); err != nil {
+	updatedWallet, err := wh.walletService.AddMoneyToWallet(userID, moneyToAdd)
+	if err != nil {
 		respWriter.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(respWriter).Encode(dto.Response{Error: err.Error()})
 		return
 	}
 
 	respWriter.WriteHeader(http.StatusOK)
+	json.NewEncoder(respWriter).Encode(&updatedWallet)
 	json.NewEncoder(respWriter).Encode(dto.Response{Message: "money added to wallet successfully"})
 }
 

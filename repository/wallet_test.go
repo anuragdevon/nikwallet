@@ -70,7 +70,7 @@ func TestWallet(t *testing.T) {
 		wallet, _ := db.CreateWallet(newWallet)
 
 		wallet.Money = &money.Money{Amount: decimal.NewFromFloat(100.0), Currency: money.INR}
-		err := db.UpdateWallet(wallet)
+		_, err := db.UpdateWallet(wallet)
 		assert.Nil(t, err)
 	})
 

@@ -24,11 +24,11 @@ func (db *PostgreSQL) GetWalletByUserID(userID int) (*models.Wallet, error) {
 	return wallet, nil
 }
 
-func (db *PostgreSQL) UpdateWallet(changedWallet *models.Wallet) error {
+func (db *PostgreSQL) UpdateWallet(changedWallet *models.Wallet) (*models.Wallet, error) {
 	err := db.DB.Save(changedWallet).Error
 	if err != nil {
-		return fmt.Errorf("failed to update wallet")
+		return nil, fmt.Errorf("failed to update wallet")
 	}
 
-	return nil
+	return changedWallet, nil
 }

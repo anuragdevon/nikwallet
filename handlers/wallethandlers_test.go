@@ -158,7 +158,7 @@ func TestWalletHandlers(t *testing.T) {
 
 		addMoneyRequest := money.Money{Amount: decimal.NewFromFloat(50.0), Currency: "INR"}
 
-		err = walletService.AddMoneyToWallet(userID, addMoneyRequest)
+		_, err = walletService.AddMoneyToWallet(userID, addMoneyRequest)
 		assert.NoError(t, err)
 
 		withdrawMoneyRequest := money.Money{Amount: decimal.NewFromFloat(50.0), Currency: "INR"}
@@ -203,7 +203,7 @@ func TestWalletHandlers(t *testing.T) {
 		assert.NotNil(t, IDToken)
 
 		addMoneyRequest := money.Money{Amount: decimal.NewFromFloat(40.0), Currency: money.INR}
-		err = walletService.AddMoneyToWallet(userID, addMoneyRequest)
+		_, err = walletService.AddMoneyToWallet(userID, addMoneyRequest)
 		assert.NoError(t, err)
 
 		withdrawMoneyRequest := money.Money{Amount: decimal.NewFromFloat(50.0), Currency: money.INR}
@@ -281,7 +281,7 @@ func TestWalletHandlers(t *testing.T) {
 		_, _ = walletService.CreateWallet(recipientID, money.INR)
 
 		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.INR)
-		_ = walletService.AddMoneyToWallet(senderID, *initialMoney)
+		walletService.AddMoneyToWallet(senderID, *initialMoney)
 
 		IDToken, _ := authService.AuthenticateUser(sender.EmailID, sender.Password)
 
@@ -337,7 +337,7 @@ func TestWalletHandlers(t *testing.T) {
 		_, _ = walletService.CreateWallet(recipientID, money.EUR)
 
 		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(10.0), money.USD)
-		_ = walletService.AddMoneyToWallet(senderID, *initialMoney)
+		walletService.AddMoneyToWallet(senderID, *initialMoney)
 
 		IDToken, _ := authService.AuthenticateUser(sender.EmailID, sender.Password)
 
