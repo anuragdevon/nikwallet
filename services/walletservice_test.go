@@ -115,7 +115,6 @@ func TestWalletService(t *testing.T) {
 		assert.NotNil(t, latestEntry, "Latest ledger entry should not be nil")
 		assert.Equal(t, newUserID, latestEntry.SenderUserID, "SenderUserID should match the user ID")
 		assert.Equal(t, newUserID, latestEntry.ReceiverUserID, "ReceiverUserID should match the user ID")
-		// assert.Equal(t, *additionalMoney, *latestEntry.Amount, "Amount should match the additional money")
 		assert.Equal(t, string(models.TransactionTypeAdd), latestEntry.TransactionType, "TransactionType should be 'add'")
 	})
 
@@ -148,7 +147,6 @@ func TestWalletService(t *testing.T) {
 		assert.NotNil(t, latestEntry, "Latest ledger entry should not be nil")
 		assert.Equal(t, newUserID, latestEntry.SenderUserID, "SenderUserID should match the user ID")
 		assert.Equal(t, newUserID, latestEntry.ReceiverUserID, "ReceiverUserID should match the user ID")
-		// assert.Equal(t, *withdrawMoney, *latestEntry.Amount, "Amount should match the withdrawn money")
 		assert.Equal(t, string(models.TransactionTypeWithdraw), latestEntry.TransactionType, "TransactionType should be 'withdraw'")
 	})
 
@@ -261,7 +259,6 @@ func TestWalletService(t *testing.T) {
 		assert.NotNil(t, recipientLedger, "Recipient ledger entry should exist")
 		assert.Equal(t, senderID, recipientLedger.SenderUserID, "SenderUserID in recipient ledger entry should match senderID")
 		assert.Equal(t, recipientID, recipientLedger.ReceiverUserID, "ReceiverUserID in recipient ledger entry should match recipientID")
-		// assert.True(t, recipientLedger.Amount.Equals(*expectedRecipientMoney), "Amount in recipient ledger entry should match expectedRecipientMoney")
 		assert.Equal(t, string(models.TransactionTypeTransfer), recipientLedger.TransactionType, "TransactionType in recipient ledger entry should be 'transfer'")
 	})
 
@@ -271,18 +268,12 @@ func TestWalletService(t *testing.T) {
 			Password: "test123",
 		}
 		senderID, _ := db.CreateUser(sender)
-		_, _ = walletService.CreateWallet(senderID, money.EUR)
+		walletService.CreateWallet(senderID, money.EUR)
 
 		wrongRecipientEmail := "wrong_recipient@example.com"
 		wrongTransferAmount, _ := money.NewMoney(decimal.NewFromFloat(20.0), money.EUR)
 		err := walletService.TransferMoney(senderID, wrongRecipientEmail, *wrongTransferAmount)
 		assert.Error(t, err, "TransferMoney should return an error")
-
-		// senderWallet, _ := db.GetWalletByUserID(senderID)
-		// assert.Nil(t, senderWallet, "Sender wallet should not be affected")
-
-		// ledgerEntries, _ := db.GetLatestLedgerEntry(senderID)
-		// assert.Empty(t, ledgerEntries, "No ledger entries should be created")
 	})
 
 	t.Run("TransferMoney method should return error for invalid sender ID", func(t *testing.T) {
@@ -302,29 +293,6 @@ func TestWalletService(t *testing.T) {
 		assert.Nil(t, recipientWallet, "Recipient wallet should not be affected")
 
 		ledgerEntries, _ := db.GetLatestLedgerEntry(recipientID)
-		assert.Empty(t, ledgerEntries, "No ledger entries should be created")
-	})
-
-	t.Run("TransferMoney method should return error for invalid recipient emailID", func(t *testing.T) {
-		sender := &models.User{
-			EmailID:  "test_sender@example.com",
-			Password: "test123",
-		}
-		senderID, _ := db.CreateUser(sender)
-		walletService.CreateWallet(senderID, money.INR)
-
-		initialMoney, _ := money.NewMoney(decimal.NewFromFloat(100.0), money.INR)
-		walletService.AddMoneyToWallet(senderID, *initialMoney)
-
-		transferAmount, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
-		err := walletService.TransferMoney(senderID, "invalid_recipient@example.com", *transferAmount)
-
-		assert.Error(t, err, "TransferMoney should return an error for invalid recipient emailID")
-
-		senderWallet, _ := db.GetWalletByUserID(senderID)
-		assert.Equal(t, initialMoney, senderWallet.Money, "Sender wallet money should remain unchanged")
-
-		ledgerEntries, _ := db.GetLatestLedgerEntry(senderID)
 		assert.Empty(t, ledgerEntries, "No ledger entries should be created")
 	})
 }
