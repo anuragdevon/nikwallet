@@ -58,6 +58,19 @@ func (ws *WalletService) AddMoneyToWallet(userID int, moneyToAdd money.Money) er
 	if err != nil {
 		return fmt.Errorf("failed to add money")
 	}
+
+	ledgerEntry := &models.Ledger{
+		SenderUserID:    userID,
+		ReceiverUserID:  userID,
+		Amount:          &moneyToAdd,
+		TransactionType: string(models.TransactionTypeAdd),
+		CreatedAt:       time.Now(),
+	}
+
+	err = db.CreateLedgerEntry(ledgerEntry)
+	if err != nil {
+		return fmt.Errorf("failed to create ledger entry")
+	}
 	return nil
 }
 
@@ -78,6 +91,20 @@ func (ws *WalletService) WithdrawMoneyFromWallet(userID int, moneyToWithdraw mon
 	if err != nil {
 		return money.Money{}, fmt.Errorf("failed to withdraw money")
 	}
+
+	ledgerEntry := &models.Ledger{
+		SenderUserID:    userID,
+		ReceiverUserID:  userID,
+		Amount:          &moneyToWithdraw,
+		TransactionType: string(models.TransactionTypeWithdraw),
+		CreatedAt:       time.Now(),
+	}
+
+	err = db.CreateLedgerEntry(ledgerEntry)
+	if err != nil {
+		return moneyToWithdraw, fmt.Errorf("failed to create ledger entry")
+	}
+
 	return moneyToWithdraw, nil
 }
 
@@ -105,6 +132,19 @@ func (ws *WalletService) TransferMoney(senderUserID int, recipientEmail string, 
 	if err != nil {
 		_ = walletService.AddMoneyToWallet(senderUserID, amountDeducted)
 		return err
+	}
+
+	ledgerEntry := &models.Ledger{
+		SenderUserID:    senderUserID,
+		ReceiverUserID:  int(recipient.ID),
+		Amount:          &moneyToTransfer,
+		TransactionType: string(models.TransactionTypeTransfer),
+		CreatedAt:       time.Now(),
+	}
+
+	err = db.CreateLedgerEntry(ledgerEntry)
+	if err != nil {
+		return fmt.Errorf("failed to create ledger entry")
 	}
 
 	return nil
