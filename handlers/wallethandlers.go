@@ -74,7 +74,6 @@ func (wh *WalletHandlers) AddMoneyToWalletHandler(respWriter http.ResponseWriter
 
 	respWriter.WriteHeader(http.StatusOK)
 	json.NewEncoder(respWriter).Encode(&updatedWallet)
-	json.NewEncoder(respWriter).Encode(dto.Response{Message: "money added to wallet successfully"})
 }
 
 func (wh *WalletHandlers) WithdrawMoneyFromWalletHandler(respWriter http.ResponseWriter, req *http.Request) {

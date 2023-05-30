@@ -93,7 +93,6 @@ func TestWalletHandlers(t *testing.T) {
 		err = json.NewDecoder(recorder.Body).Decode(&response)
 		assert.NoError(t, err)
 
-		assert.Equal(t, "money added to wallet successfully", response.Message)
 
 		expectedAddedMoney, _ := money.NewMoney(decimal.NewFromFloat(50.0), money.INR)
 		senderWallet, _ := walletService.GetWalletByUserID(userID)
