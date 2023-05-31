@@ -55,7 +55,7 @@ func TestLedger(t *testing.T) {
 				ReceiverUserID:  2,
 				Amount:          transferAmount,
 				TransactionType: string(models.TransactionTypeTransfer),
-				CreatedAt:       time.Now().Add(time.Duration(-i) * time.Minute), // Create entries with decreasing timestamps
+				CreatedAt:       time.Now().Add(time.Duration(-i) * time.Minute),
 			}
 			err := db.CreateLedgerEntry(newEntry)
 			assert.NoError(t, err)
